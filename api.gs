@@ -173,7 +173,8 @@ function saveKonselingAwal(o) {
   var ringkas = 'Konseling awal 4T. Profil: ' + (o.batangPerHari || '-') + ' batang/hari, mulai merokok usia ' +
     (o.usiaMulai || '-') + ', jenis: ' + (o.jenisRokok || '-') + '. Fagerstrom ' + o.skorFagerstrom +
     ' (' + label + '), motivasi ' + o.motivasi + '/10, tahap: ' + (o.tahap || '-') + '.' +
-    (o.vapeInfo ? ' Rokok elektronik: ' + o.vapeInfo : '');
+    (o.vapeInfo ? ' Rokok elektronik: ' + o.vapeInfo : '') +
+    (o.motAlasan ? ' Alasan motivasi: ' + o.motAlasan : '');
   var tindak = 'Tanggal berhenti: ' + (o.tanggalBerhenti || '(belum ditentukan)') +
     '. Metode: ' + (o.metode || '-') + '. Dukungan keluarga: ' + (o.dukungan || '-') +
     '. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.';
@@ -197,6 +198,7 @@ function saveKonseling(o) {
   var penilaian = [];
   if (o.skorFagerstrom !== '' && o.skorFagerstrom !== null && o.skorFagerstrom !== undefined) penilaian.push('Fagerstrom ' + o.skorFagerstrom + ' (' + fagerstromLabel_(o.skorFagerstrom) + ')');
   if (o.motivasi !== '' && o.motivasi !== null && o.motivasi !== undefined) penilaian.push('Motivasi ' + o.motivasi + '/10');
+  if (o.motAlasan) penilaian.push('Alasan motivasi: ' + o.motAlasan);
   if (o.jenisRokok) penilaian.push('Jenis rokok: ' + o.jenisRokok);
   if (o.vapeInfo) penilaian.push('Rokok elektronik: ' + o.vapeInfo);
   if (penilaian.length) tindak = (tindak ? tindak + ' | ' : '') + 'Penilaian: ' + penilaian.join('; ');
