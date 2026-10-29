@@ -27,6 +27,11 @@
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:12px}
   .modal .card{max-width:680px;width:100%;max-height:92vh;overflow:auto}
   .modal.hidden{display:none}
+  .prev-card{border:1px solid #fecdd3;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
+  .prev-card h3{margin:0 0 6px 0;font-size:17px}
+  .prev-card h4{margin:0 0 6px 0;font-size:16px}
+  .prev-card p{margin:4px 0}
+  .prev-fu{border-top:1px dashed #fecdd3;margin-top:10px;padding-top:8px}
   .fag-opt{display:block;padding:12px 10px;border:1px solid #fecdd3;border-radius:10px;margin:8px 0;cursor:pointer;font-size:15px}
   .fag-opt:has(input:checked){background:#fce7f3;border-color:#e11d48;font-weight:bold}
   .fag-opt input[type=radio]{width:20px;height:20px;accent-color:#e11d48;vertical-align:middle;margin-right:8px}
@@ -110,7 +115,7 @@
       <h3>Ringkasan penilaian</h3>
       <div id="pk-ringkas"></div>
       <h3>Riwayat konseling &amp; FU</h3>
-      <p class="muted">Riwayat di bawah hanya untuk klien yang sedang dibuka. Belum berhenti pakai Konseling 1, 2, dst. Sudah berhenti pakai CAR 1, 2, dst (CAR = bulan berhenti terus-menerus).</p>
+      <p class="muted">Riwayat di bawah hanya untuk klien yang sedang dibuka. Tiap kartu adalah preview satu tanggal pemeriksaan. Di dalam kartu ada status follow up, tombol Pemeriksaan untuk detail lengkap tanggal itu, tombol Follow Up, dan tombol Hapus Riwayat. Belum berhenti pakai Konseling 1, 2, dst. Sudah berhenti pakai CAR 1, 2, dst (CAR = bulan berhenti terus-menerus).</p>
       <div id="pk-riwayat-tabel" style="overflow-x:auto"></div>
       <h3>C. Ubah Status Akhir Klien</h3>
       <p id="s-note" class="muted">SUKSES = berhenti 1 tahun terus-menerus, dibuktikan dengan CAR 12. KAMBUH = kembali merokok, kembali ke layanan dan buat tanggal berhenti baru. DO = dicatat dan ditawarkan kembali.</p>
@@ -370,8 +375,9 @@ function renderKlien(){
   var q=(document.getElementById('cari').value||'').toLowerCase();
   var f=document.getElementById('filter-status').value;
   var rows=DATA.klien.filter(function(r){ var s=(r.values[3]+' '+r.values[2]).toLowerCase(); return (!q||s.indexOf(q)>=0) && (!f||r.values[16]===f) });
-  document.getElementById('daftar-klien').innerHTML=rows.length? '<table><tr><th>Nama</th><th>NIK</th><th>Status</th><th></th></tr>'+rows.map(function(r){
-    return '<tr ondblclick="bukaPemeriksaan(\''+esc(r.values[2])+'\')"><td>'+esc(r.values[3])+'</td><td>'+maskNik(r.values[2])+'</td><td>'+esc(r.values[16]||'Aktif')+'</td><td><button class="btn2" onclick="detailKlien(\''+esc(r.values[2])+'\')">Detail</button> <button class="btn2" onclick="bukaPemeriksaan(\''+esc(r.values[2])+'\')">Pemeriksaan</button> <button class="btn2" onclick="mintaHapusKlien(\''+esc(r.values[2])+'\')">Hapus</button></td></tr>'}).join('')+'</table><p class="muted">Klik 2 kali pada baris, atau tekan Pemeriksaan, untuk membuka halaman konseling &amp; FU klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+  document.getElementById('daftar-klien').innerHTML=rows.length? rows.map(function(r){
+    var nik=r.values[2]; var riw=DATA.konseling.filter(function(x){return String(x.values[0])===String(nik)}); var jad=DATA.jadwal.filter(function(x){return String(x.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}); var jadDekat=jad.length?jad[0].values[0]:'-';
+    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+' <span class="pill">'+esc(r.values[16]||'Aktif')+'</span></h3><p class="muted">NIK: '+maskNik(nik)+' &middot; Daftar: '+esc(r.values[1])+'</p><p>Preview: Fagerstrom '+esc(r.values[12]||'-')+' &middot; Motivasi '+esc(r.values[13]||'-')+'/10 &middot; Tahap: '+esc(r.values[14]||'-')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p><p>Riwayat: '+riw.length+' catatan &mdash; '+progresKlien(r)+'</p><p>Perjanjian: '+jad.length+' &middot; Terdekat: '+esc(jadDekat)+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
 }
 function detailKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
@@ -526,11 +532,12 @@ function renderRiwayat(){
   var riw=DATA.konseling.filter(function(r){return String(r.values[0])===String(nik)});
   document.getElementById('pk-ringkas').innerHTML='<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16]||'Aktif')+'</b></p><p>'+progresKlien(k)+'</p>';
   renderStatusOptions();
-  document.getElementById('pk-riwayat-tabel').innerHTML=riw.length? '<table><tr><th>Tanggal</th><th>Jenis</th><th>Status</th><th>CO</th><th>Jadwal FU</th><th>Status FU</th><th>Aksi</th></tr>'+riw.map(function(r){
+  document.getElementById('pk-riwayat-tabel').innerHTML=riw.length? riw.map(function(r){
     var fu=cariFU(nik, r.values[2]);
     var fuTgl=fu?fu.values[0]:'-';
     var fuStatus=!fu?'Belum dijadwalkan':(fu.values[5]==='Hadir'?'Selesai follow up':'Belum follow up');
-    return '<tr><td>'+esc(r.values[2])+'</td><td>'+esc(r.values[3])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5])+'</td><td>'+esc(fuTgl)+'</td><td>'+esc(fuStatus)+'</td><td><button class="btn2" onclick="detailRiwayat('+r.row+')">Detail</button> <button class="btn2" onclick="bukaFU('+r.row+')">Follow Up</button> <button class="btn2" onclick="mintaHapusRiwayat('+r.row+')">Hapus</button></td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada riwayat konseling/FU untuk klien ini. Buka tab Konseling Pertama untuk pemeriksaan pertama.</p>';
+    var ken=String(r.values[8]||''); ken=ken.length>140?ken.slice(0,140)+'...':ken;
+    return '<div class="prev-card"><h4>'+esc(r.values[2])+' &mdash; '+esc(r.values[3])+'</h4><p>Preview pemeriksaan: Status '+esc(r.values[4]||'-')+' &middot; CO '+(r.values[5]===''||r.values[5]===null?'-':esc(r.values[5])+' ppm')+' &middot; BB '+(r.values[6]===''||r.values[6]===null?'-':esc(r.values[6])+' kg')+' &middot; TD '+esc(r.values[7]||'-')+'</p>'+(ken?'<p>Kendala: '+esc(ken)+'</p>':'')+'<div class="prev-fu"><p><b>Status Follow Up:</b> <span class="pill">'+esc(fuStatus)+'</span> &middot; Jadwal FU: '+esc(fuTgl)+'</p></div><button class="btn" type="button" onclick="detailRiwayat('+r.row+')">Pemeriksaan</button> <button class="btn2" type="button" onclick="bukaFU('+r.row+')">Follow Up</button> <button class="btn2" type="button" onclick="mintaHapusRiwayat('+r.row+')">Hapus Riwayat</button></div>'}).join('') : '<p class="muted">Belum ada riwayat konseling/FU untuk klien ini. Buka tab Konseling Pertama untuk pemeriksaan pertama.</p>';
 }
 function simpanKlien(e){ e.preventDefault();
   var o={tanggalDaftar:document.getElementById('b-tgl').value, nik:document.getElementById('b-nik').value, nama:document.getElementById('b-nama').value, tanggalLahir:document.getElementById('b-lahir').value, lp:document.getElementById('b-lp').value, alamat:document.getElementById('b-alamat').value, noHp:document.getElementById('b-hp').value, pendidikan:document.getElementById('b-didik').value, pekerjaan:document.getElementById('b-kerja').value, statusKawin:document.getElementById('b-kawin').value, golDarah:document.getElementById('b-gol').value, skorFagerstrom:'', motivasi:'', tahap:'', tanggalBerhenti:'', status:'Aktif'};
