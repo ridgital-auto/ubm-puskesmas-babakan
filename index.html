@@ -232,16 +232,26 @@
       </div>
       <button class="btn2" type="button" id="a-mot-btn" onclick="toggleForm('a-mot-box','a-mot-btn','Form Skala Motivasi')">Sembunyikan Form Skala Motivasi</button>
       <div id="a-mot-box">
-        <label>Motivasi berhenti (0&ndash;10): <span id="a-mot-val">5</span></label>
-        <input type="range" id="a-mot" min="0" max="10" value="5" oninput="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)">
-        <p class="muted">0 = tanpa motivasi sama sekali, 10 = sangat termotivasi (Skala Motivasi, Modul TOT UBM). <span id="a-mot-interp"></span></p>
+        <p><b>Form Skala Motivasi &mdash; pilih satu angka (0&ndash;10):</b> terpilih: <b id="a-mot-val">5</b>/10 &middot; <span id="a-mot-interp"></span></p>
+        <p class="muted">0 = tanpa motivasi sama sekali, 10 = sangat termotivasi (Skala Motivasi, Modul TOT UBM).</p>
+<label class="fag-opt"><input type="radio" name="a-mot-pilih" value="0" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 0 (tanpa motivasi sama sekali)</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="1" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 1</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="2" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 2</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="3" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 3</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="4" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 4</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="5" checked onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 5</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="6" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 6</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="7" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 7</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="8" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 8</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="9" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 9</label>
+        <label class="fag-opt"><input type="radio" name="a-mot-pilih" value="10" onchange="document.getElementById('a-mot-val').textContent=this.value;document.getElementById('a-mot-interp').textContent=motInterp(this.value)"> 10 (sangat termotivasi)</label>
         <p><b>Form detail skala motivasi (pengukur penting &ndash; yakin &ndash; siap, masing-masing 0&ndash;10):</b></p>
-        <label>Seberapa penting berhenti merokok bagi klien? (0&ndash;10): <span id="a-mot-penting-val">5</span></label>
-        <input type="range" id="a-mot-penting" min="0" max="10" value="5" oninput="document.getElementById('a-mot-penting-val').textContent=this.value">
-        <label>Seberapa yakin klien bisa berhenti? (0&ndash;10): <span id="a-mot-yakin-val">5</span></label>
-        <input type="range" id="a-mot-yakin" min="0" max="10" value="5" oninput="document.getElementById('a-mot-yakin-val').textContent=this.value">
-        <label>Seberapa siap klien berhenti sekarang? (0&ndash;10): <span id="a-mot-siap-val">5</span></label>
-        <input type="range" id="a-mot-siap" min="0" max="10" value="5" oninput="document.getElementById('a-mot-siap-val').textContent=this.value">
+        <label>Seberapa penting berhenti merokok bagi klien? (pilih 0&ndash;10)</label>
+        <select id="a-mot-penting"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+        <label>Seberapa yakin klien bisa berhenti? (pilih 0&ndash;10)</label>
+        <select id="a-mot-yakin"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+        <label>Seberapa siap klien berhenti sekarang? (pilih 0&ndash;10)</label>
+        <select id="a-mot-siap"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
         <label>Alasan / pernyataan motivasi klien</label><textarea id="a-mot-alasan" placeholder="Tulis dengan kata-kata klien sendiri, misal: ingin berhenti karena anak sering batuk."></textarea>
       </div>
       <p><b>Telaah:</b> tahap perubahan.</p>
@@ -306,14 +316,14 @@
         </div>
         <button class="btn2" type="button" id="m-mot-btn" onclick="toggleForm('m-mot-box','m-mot-btn','Form Skala Motivasi')">Tampilkan Form Skala Motivasi</button>
         <div id="m-mot-box" class="hidden">
-          <label>Motivasi berhenti baru (0&ndash;10, opsional): <span id="m-mot-val">5</span></label>
-          <input type="range" id="m-mot" min="0" max="10" value="5" oninput="document.getElementById('m-mot-val').textContent=this.value">
-          <label>Detail motivasi (opsional): Penting <span id="m-mot-penting-val">5</span> / Yakin <span id="m-mot-yakin-val">5</span> / Siap <span id="m-mot-siap-val">5</span></label>
+          <label>Motivasi berhenti baru (pilih 0&ndash;10, opsional)</label>
+          <select id="m-mot"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+          <label>Detail motivasi (opsional)</label>
           <div class="row">
-            <div><label>Penting (0&ndash;10)</label><input type="range" id="m-mot-penting" min="0" max="10" value="5" oninput="document.getElementById('m-mot-penting-val').textContent=this.value"></div>
-            <div><label>Yakin (0&ndash;10)</label><input type="range" id="m-mot-yakin" min="0" max="10" value="5" oninput="document.getElementById('m-mot-yakin-val').textContent=this.value"></div>
+            <div><label>Penting (0&ndash;10)</label><select id="m-mot-penting"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+            <div><label>Yakin (0&ndash;10)</label><select id="m-mot-yakin"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
           </div>
-          <label>Siap (0&ndash;10)</label><input type="range" id="m-mot-siap" min="0" max="10" value="5" oninput="document.getElementById('m-mot-siap-val').textContent=this.value">
+          <label>Siap (0&ndash;10)</label><select id="m-mot-siap"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
           <label>Alasan / pernyataan motivasi klien</label><textarea id="m-mot-alasan"></textarea>
         </div>
         <label>Kendala / gejala putus nikotin</label><textarea id="m-kendala"></textarea>
@@ -555,7 +565,7 @@ function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka kli
     if(!ps.lengkap){showMsg('Lengkapi kuesioner Penn State untuk rokok elektronik dulu (10 pertanyaan).','err'); return false}
     vapeA='Penn State ECDI skor '+ps.total+'/20 ('+psLabel(ps.total)+') ['+psJawaban()+']. Perangkat: '+(document.getElementById('a-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById('a-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById('a-vape-frek').value||'-')+'; Catatan: '+(document.getElementById('a-vape-nyata').value||'-');
   }
-  var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('a-tgl').value, batangPerHari:document.getElementById('a-batang').value, usiaMulai:document.getElementById('a-usia').value, jenisRokok:jenisA, vapeInfo:vapeA, skorFagerstrom:fagTotal, motivasi:document.getElementById('a-mot').value, motAlasan:'Detail motivasi: Penting '+document.getElementById('a-mot-penting').value+'/10, Yakin '+document.getElementById('a-mot-yakin').value+'/10, Siap '+document.getElementById('a-mot-siap').value+'/10.'+(document.getElementById('a-mot-alasan').value?' Alasan: '+document.getElementById('a-mot-alasan').value:''), tahap:document.getElementById('a-tahap').value, tanggalBerhenti:document.getElementById('a-berhenti').value, metode:document.getElementById('a-metode').value, dukungan:document.getElementById('a-dukung').value};
+  var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('a-tgl').value, batangPerHari:document.getElementById('a-batang').value, usiaMulai:document.getElementById('a-usia').value, jenisRokok:jenisA, vapeInfo:vapeA, skorFagerstrom:fagTotal, motivasi:(document.querySelector('input[name="a-mot-pilih"]:checked')?document.querySelector('input[name="a-mot-pilih"]:checked').value:'5'), motAlasan:'Detail motivasi: Penting '+document.getElementById('a-mot-penting').value+'/10, Yakin '+document.getElementById('a-mot-yakin').value+'/10, Siap '+document.getElementById('a-mot-siap').value+'/10.'+(document.getElementById('a-mot-alasan').value?' Alasan: '+document.getElementById('a-mot-alasan').value:''), tahap:document.getElementById('a-tahap').value, tanggalBerhenti:document.getElementById('a-berhenti').value, metode:document.getElementById('a-metode').value, dukungan:document.getElementById('a-dukung').value};
   run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui. Bila ini pemeriksaan baru setelah status DO, ubah status kembali ke Aktif di bawah Riwayat agar Konseling Pertama terkunci lagi.','ok'); muat()}); return false }
 function ubahStatus(){ if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return}
   run('updateKlienStatus',{nik:klienTerpilih.values[2], status:document.getElementById('s-status').value},function(){showMsg('Status klien diperbarui.','ok'); muat()}) }
