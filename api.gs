@@ -1,0 +1,246 @@
+// ============================================================
+// API UBM Puskesmas Babakan (Apps Script, dipasang SEKALI)
+// Database: Sheet e-RM UBM, ID sama seperti Code.gs lama.
+// Frontend GitHub Pages memanggil API ini lewat GET:
+//   <URL_API>?action=getData
+//   <URL_API>?action=saveKlien&payload={...json...}
+// Aksi: getData, saveKlien, saveKonselingAwal, saveKonseling,
+//        updateKlienStatus, saveJadwal, updateKehadiran
+// Semua tulis memakai GET agar tidak hilang saat Apps Script
+// me-redirect dari script.google.com ke googleusercontent.com.
+// Link API ini HANYA untuk Tim UBM, jangan dipublikasikan.
+// ============================================================
+function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) || 'ping';
+  try {
+    if (action === 'ping') {
+      return jsonOut_({ ok: true, service: 'UBM API' });
+    }
+    if (action === 'getData') {
+      return jsonOut_({ ok: true, data: getData() });
+    }
+    var payload = {};
+    if (e.parameter.payload) payload = JSON.parse(e.parameter.payload);
+    var lock = LockService.getScriptLock();
+    lock.tryLock(30000);
+    var result;
+    if (action === 'saveKlien') result = saveKlien(payload);
+    else if (action === 'saveKonselingAwal') result = saveKonselingAwal(payload);
+    else if (action === 'saveKonseling') result = saveKonseling(payload);
+    else if (action === 'updateKlienStatus') result = updateKlienStatus(payload);
+    else if (action === 'saveJadwal') result = saveJadwal(payload);
+    else if (action === 'updateKehadiran') result = updateKehadiran(payload);
+    else throw new Error('Aksi tidak dikenal: ' + action);
+    lock.releaseLock();
+    return jsonOut_({ ok: true, data: result });
+  } catch (err) {
+    try { LockService.getScriptLock().releaseLock(); } catch (e2) {}
+    return jsonOut_({ ok: false, error: String(err && err.message ? err.message : err) });
+  }
+}
+function jsonOut_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+// ============================================================
+// Web App UBM Puskesmas Babakan
+// Database: Google Sheet "e-RM UBM Puskesmas Babakan"
+// Spreadsheet ID: 16h7TiyO2quO1xR7IHcHNh0fe0Gy_mrc2djFZhgThKDo
+// Cara pakai (Apps Script):
+//  1. Buka Sheet e-RM UBM > Ekstensi > Apps Script
+//  2. Tempel file ini sebagai Code.gs, dan index.html sebagai file HTML
+//  3. Deploy > Deployment baru > Jenis: Aplikasi web
+//     Jalankan sebagai: Saya (akun pemilik Sheet)
+//     Yang memiliki akses: Siapa pun (link hanya dibagikan ke Tim UBM)
+//  4. Izinkan akses Spreadsheet saat diminta.
+// Skema Sheet TIDAK diubah oleh aplikasi ini: hanya menambah baris
+// dan mengubah kolom Status (Klien) serta Kehadiran/Keterangan (Jadwal).
+// ============================================================
+var SHEET_ID = '16h7TiyO2quO1xR7IHcHNh0fe0Gy_mrc2djFZhgThKDo';
+var TAB_KLIEN = 'Klien';
+var TAB_KONSELING = 'Konseling & FU';
+var TAB_JADWAL = 'Jadwal Perjanjian';
+
+
+function ss_() {
+  return SpreadsheetApp.openById(SHEET_ID);
+}
+
+function readTab_(name) {
+  var sheet = ss_().getSheetByName(name);
+  var values = sheet.getDataRange().getValues();
+  // Baris 1 = header, dibuang. Sertakan nomor baris Sheet (untuk update).
+  var out = [];
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    // Lewati baris kosong total
+    var empty = true;
+    for (var j = 0; j < row.length; j++) {
+      if (row[j] !== '' && row[j] !== null) { empty = false; break; }
+    }
+    if (empty) continue;
+    out.push({ row: i + 1, values: row.map(function (v) {
+      // Tanggal dari Sheet dikirim sebagai string ISO agar stabil di browser
+      if (Object.prototype.toString.call(v) === '[object Date]') {
+        return Utilities.formatDate(v, 'Asia/Makassar', 'yyyy-MM-dd');
+      }
+      return v;
+    })});
+  }
+  return out;
+}
+
+function getData() {
+  return {
+    klien: readTab_(TAB_KLIEN),
+    konseling: readTab_(TAB_KONSELING),
+    jadwal: readTab_(TAB_JADWAL)
+  };
+}
+
+function fagerstromLabel_(skor) {
+  skor = Number(skor);
+  if (isNaN(skor)) return '';
+  if (skor < 5) return 'Rendah';
+  if (skor === 5) return 'Moderat';
+  return 'Tinggi';
+}
+
+function saveKlien(o) {
+  // o: objek dari form Klien Baru, kunci sesuai kolom Sheet
+  var nik = String(o.nik || '').replace(/\D/g, '');
+  if (nik.length !== 16) throw new Error('NIK harus 16 digit angka.');
+  var sheet = ss_().getSheetByName(TAB_KLIEN);
+  var last = sheet.getLastRow();
+  // Cek NIK ganda (kolom C)
+  if (last >= 2) {
+    var niks = sheet.getRange(2, 3, last - 1, 1).getValues();
+    for (var i = 0; i < niks.length; i++) {
+      if (String(niks[i][0]).replace(/\D/g, '') === nik) {
+        throw new Error('NIK ini sudah terdaftar. Cari di Daftar Klien, jangan daftar ulang.');
+      }
+    }
+  }
+  var no = last < 2 ? 1 : last; // baris berikutnya = nomor urut (header di baris 1)
+  // Jika ada baris kosong di tengah, nomor tetap dihitung dari baris terakhir
+  var row = [
+    no,
+    o.tanggalDaftar || '',
+    nik,
+    o.nama || '',
+    o.tanggalLahir || '',
+    o.lp || '',
+    o.alamat || '',
+    o.noHp || '',
+    o.pendidikan || '',
+    o.pekerjaan || '',
+    o.statusKawin || '',
+    o.golDarah || '',
+    o.skorFagerstrom === '' || o.skorFagerstrom === null ? '' : Number(o.skorFagerstrom),
+    o.motivasi === '' || o.motivasi === null ? '' : Number(o.motivasi),
+    o.tahap || '',
+    o.tanggalBerhenti || '',
+    o.status || 'Aktif'
+  ];
+  sheet.appendRow(row);
+  return { ok: true, no: no, nik: nik };
+}
+
+function findKlienRowByNik_(nik) {
+  var sheet = ss_().getSheetByName(TAB_KLIEN);
+  var last = sheet.getLastRow();
+  if (last < 2) return -1;
+  var niks = sheet.getRange(2, 3, last - 1, 1).getValues();
+  for (var i = 0; i < niks.length; i++) {
+    if (String(niks[i][0]).replace(/\D/g, '') === String(nik).replace(/\D/g, '')) {
+      return i + 2;
+    }
+  }
+  return -1;
+}
+
+function saveKonselingAwal(o) {
+  // o: nik, nama, tanggal, batangPerHari, usiaMulai, jenisRokok,
+  //    skorFagerstrom, motivasi, tahap, tanggalBerhenti, metode, dukungan
+  var r = findKlienRowByNik_(o.nik);
+  if (r < 0) throw new Error('Klien tidak ditemukan. Daftarkan dulu di Klien Baru.');
+  var sheet = ss_().getSheetByName(TAB_KLIEN);
+  // Kolom: M=Skor Fagerstrom(13), N=Motivasi(14), O=Tahap(15), P=Tanggal berhenti(16)
+  sheet.getRange(r, 13).setValue(o.skorFagerstrom === '' ? '' : Number(o.skorFagerstrom));
+  sheet.getRange(r, 14).setValue(o.motivasi === '' ? '' : Number(o.motivasi));
+  sheet.getRange(r, 15).setValue(o.tahap || '');
+  sheet.getRange(r, 16).setValue(o.tanggalBerhenti || '');
+  var label = fagerstromLabel_(o.skorFagerstrom);
+  var ringkas = 'Konseling awal 4T. Profil: ' + (o.batangPerHari || '-') + ' batang/hari, mulai merokok usia ' +
+    (o.usiaMulai || '-') + ', jenis: ' + (o.jenisRokok || '-') + '. Fagerstrom ' + o.skorFagerstrom +
+    ' (' + label + '), motivasi ' + o.motivasi + '/10, tahap: ' + (o.tahap || '-') + '.';
+  var tindak = 'Tanggal berhenti: ' + (o.tanggalBerhenti || '(belum ditentukan)') +
+    '. Metode: ' + (o.metode || '-') + '. Dukungan keluarga: ' + (o.dukungan || '-') +
+    '. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.';
+  var ks = ss_().getSheetByName(TAB_KONSELING);
+  ks.appendRow([o.nik, o.nama || '', o.tanggal || '', 'Konseling 1', 'Masih merokok', '', '', '', ringkas, tindak]);
+  return { ok: true };
+}
+
+function saveKonseling(o) {
+  // o: nik, nama, tanggal, jenis, statusMerokok, co, bb, td, kendala, tindak
+  var r = findKlienRowByNik_(o.nik);
+  if (r < 0) throw new Error('Klien tidak ditemukan. Daftarkan dulu di Klien Baru.');
+  var ks = ss_().getSheetByName(TAB_KONSELING);
+  ks.appendRow([
+    o.nik, o.nama || '', o.tanggal || '', o.jenis || '',
+    o.statusMerokok || '',
+    o.co === '' || o.co === null ? '' : Number(o.co),
+    o.bb === '' || o.bb === null ? '' : Number(o.bb),
+    o.td || '',
+    o.kendala || '', o.tindak || ''
+  ]);
+  return { ok: true };
+}
+
+function updateKlienStatus(o) {
+  // o: nik, status
+  var allowed = ['Aktif', 'SUKSES', 'KAMBUH', 'DO', 'Dirujuk'];
+  if (allowed.indexOf(o.status) < 0) throw new Error('Status tidak dikenal.');
+  var r = findKlienRowByNik_(o.nik);
+  if (r < 0) throw new Error('Klien tidak ditemukan.');
+  ss_().getSheetByName(TAB_KLIEN).getRange(r, 17).setValue(o.status);
+  return { ok: true };
+}
+
+function saveJadwal(o) {
+  // o: tanggal, hari, jam, nik, nama, kehadiran, keterangan
+  // Aturan layanan: Senin-Kamis, 12.00-13.00 WITA, maks 2 klien/hari
+  var d = new Date(o.tanggal + 'T00:00:00');
+  var dow = d.getDay(); // 0=Minggu, 5=Jumat, 6=Sabtu
+  if (dow === 0 || dow === 5 || dow === 6) {
+    throw new Error('Jadwal konseling hanya Senin-Kamis. Pilih hari Senin, Selasa, Rabu, atau Kamis.');
+  }
+  var sheet = ss_().getSheetByName(TAB_JADWAL);
+  var last = sheet.getLastRow();
+  var count = 0;
+  if (last >= 2) {
+    var vals = sheet.getRange(2, 1, last - 1, 1).getValues();
+    for (var i = 0; i < vals.length; i++) {
+      var v = vals[i][0];
+      var s = (Object.prototype.toString.call(v) === '[object Date]')
+        ? Utilities.formatDate(v, 'Asia/Makassar', 'yyyy-MM-dd') : String(v);
+      if (s === o.tanggal) count++;
+    }
+  }
+  if (count >= 2) {
+    throw new Error('Tanggal ini sudah penuh (2 klien). Pilih tanggal lain.');
+  }
+  sheet.appendRow([
+    o.tanggal, o.hari || '', o.jam || '12.00-13.00 WITA',
+    o.nik || '', o.nama || '', o.kehadiran || '', o.keterangan || ''
+  ]);
+  return { ok: true, sudahTerisi: count + 1 };
+}
+
+function updateKehadiran(o) {
+  // o: row (nomor baris Sheet di tab Jadwal), kehadiran, keterangan
+  var sheet = ss_().getSheetByName(TAB_JADWAL);
+  sheet.getRange(o.row, 6).setValue(o.kehadiran || '');
+  sheet.getRange(o.row, 7).setValue(o.keterangan || '');
+  return { ok: true };
+}

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UBM Puskesmas Babakan</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f5f3;color:#1f2937}
+  header{background:#047857;color:#fff;padding:16px} header h1{margin:0;font-size:20px} header p{margin:4px 0 0;opacity:.9;font-size:13px}
+  nav{display:flex;gap:6px;padding:10px;background:#fff;border-bottom:1px solid #ddd;flex-wrap:wrap}
+  nav button{border:1px solid #047857;background:#fff;color:#047857;padding:9px 13px;border-radius:20px;cursor:pointer;font-size:14px}
+  nav button.on{background:#047857;color:#fff}
+  main{max-width:980px;margin:0 auto;padding:14px} .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  h2{margin:0 0 10px;font-size:18px} h3{margin:14px 0 6px;font-size:15px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .stat{border:1px solid #d1e7dd;border-radius:10px;padding:12px;text-align:center} .stat b{font-size:26px;display:block;color:#047857}
+  label{display:block;font-size:13px;margin:10px 0 4px;font-weight:bold}
+  input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+  textarea{min-height:70px} .row{display:grid;grid-template-columns:1fr 1fr;gap:10px} @media(max-width:600px){.row{grid-template-columns:1fr}}
+  .btn{background:#047857;color:#fff;border:0;padding:12px 18px;border-radius:8px;cursor:pointer;font-size:15px;margin-top:12px}
+  .btn2{background:#fff;color:#047857;border:1px solid #047857;padding:8px 12px;border-radius:8px;cursor:pointer}
+  table{width:100%;border-collapse:collapse;font-size:14px} th,td{border-bottom:1px solid #e5e7eb;padding:8px;text-align:left;vertical-align:top}
+  .muted{color:#6b7280;font-size:13px} .warn{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:10px;font-size:14px}
+  .ok{background:#dcfce7;border:1px solid #22c55e;border-radius:8px;padding:10px;font-size:14px} .err{background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:10px;font-size:14px}
+  .hidden{display:none} .pill{display:inline-block;background:#e0f2fe;border-radius:20px;padding:2px 9px;font-size:12px}
+  input[type=range]{padding:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>UBM Puskesmas Babakan</h1>
+  <p>Layanan konseling berhenti merokok &mdash; Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, dengan perjanjian. Data tersimpan di Sheet e-RM UBM lewat API Apps Script.</p>
+</header>
+<nav>
+  <button class="on" data-tab="beranda">Beranda</button>
+  <button data-tab="klien">Daftar Klien</button>
+  <button data-tab="baru">Klien Baru</button>
+  <button data-tab="konseling">Konseling &amp; FU</button>
+  <button data-tab="jadwal">Jadwal</button>
+  <button data-tab="panduan">Panduan 4T</button>
+</nav>
+<main>
+  <div id="msg"></div>
+
+  <section id="tab-beranda" class="card">
+    <h2>Beranda</h2>
+    <p class="muted">Angka di bawah dihitung dari tab Klien, Konseling &amp; FU, dan Jadwal Perjanjian di Sheet e-RM UBM.</p>
+    <div class="grid" id="stats"></div>
+    <h3>Jadwal terdekat</h3>
+    <div id="jadwal-dekat"></div>
+    <p class="muted">Rumus yang dipakai di sini: success rate = SUKSES &divide; total klien terdaftar; DO rate = DO &divide; total klien; referral rate = Dirujuk &divide; total klien. Cakupan skrining klaster 3 dihitung terpisah dari jumlah kunjungan klaster 3, karena angka itu tidak ada di Sheet ini.</p>
+    <div class="warn"><b>Penting:</b> Link aplikasi ini hanya untuk Tim UBM. Jangan disebar ke luar tim, karena di dalamnya ada NIK klien. Kunjungan tetap dicatat di e-puskesmas; aplikasi ini hanya register UBM, bukan pengganti rekam medis resmi.</div>
+  </section>
+
+  <section id="tab-klien" class="card hidden">
+    <h2>Daftar Klien</h2>
+    <label>Cari nama / NIK</label>
+    <input id="cari" placeholder="Ketik nama atau NIK..." oninput="renderKlien()">
+    <label>Filter status</label>
+    <select id="filter-status" onchange="renderKlien()">
+      <option value="">Semua</option><option>Aktif</option><option>SUKSES</option><option>KAMBUH</option><option>DO</option><option>Dirujuk</option>
+    </select>
+    <div id="daftar-klien" style="overflow-x:auto"></div>
+    <div id="detail-klien"></div>
+  </section>
+
+  <section id="tab-baru" class="card hidden">
+    <h2>Klien Baru</h2>
+    <p class="muted">Isi sesuai KTP. NIK wajib 16 digit. Setelah tersimpan, lanjut ke Konseling Awal (4T) di tab Konseling &amp; FU.</p>
+    <form onsubmit="return simpanKlien(event)">
+      <div class="row">
+        <div><label>Tanggal daftar</label><input type="date" id="b-tgl" required></div>
+        <div><label>NIK (16 digit)</label><input id="b-nik" inputmode="numeric" maxlength="16" required placeholder="16 digit angka"></div>
+      </div>
+      <label>Nama lengkap</label><input id="b-nama" required>
+      <div class="row">
+        <div><label>Tanggal lahir</label><input type="date" id="b-lahir" required></div>
+        <div><label>L/P</label><select id="b-lp" required><option value="">Pilih</option><option>LAKI-LAKI</option><option>PEREMPUAN</option></select></div>
+      </div>
+      <label>Alamat</label><textarea id="b-alamat" required></textarea>
+      <div class="row">
+        <div><label>No HP aktif</label><input id="b-hp" required placeholder="Untuk FU telepon/WA"></div>
+        <div><label>Gol darah</label><select id="b-gol"><option value="">Tidak tahu</option><option>A</option><option>B</option><option>O</option><option>AB</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Pendidikan</label><select id="b-didik"><option value="">Pilih</option><option>TIDAK SEKOLAH</option><option>SD-SLTP</option><option>SLTA</option><option>DIPLOMA</option><option>SARJANA</option><option>PASCASARJANA</option></select></div>
+        <div><label>Status kawin</label><select id="b-kawin"><option value="">Pilih</option><option>BELUM</option><option>MENIKAH</option><option>JANDA-DUDA</option></select></div>
+      </div>
+      <label>Pekerjaan</label><input id="b-kerja">
+      <button class="btn" type="submit">Simpan Klien</button>
+    </form>
+  </section>
+
+  <section id="tab-konseling" class="card hidden">
+    <h2>Konseling &amp; Tindak Lanjut</h2>
+    <label>Pilih klien (ketik nama / NIK)</label>
+    <input id="k-cari" list="klien-list" placeholder="Ketik nama..." onchange="pilihKlien()">
+    <datalist id="klien-list"></datalist>
+    <div id="klien-terpilih" class="muted"></div>
+
+    <h3>A. Konseling Awal &mdash; Metode 4T (Pertemuan 1)</h3>
+    <form onsubmit="return simpanAwal(event)">
+      <label>Tanggal konseling awal</label><input type="date" id="a-tgl" required>
+      <p><b>Tanyakan:</b> profil perokok dan tingkat adiksi.</p>
+      <div class="row">
+        <div><label>Batang per hari</label><input type="number" id="a-batang" min="0"></div>
+        <div><label>Usia mulai merokok</label><input type="number" id="a-usia" min="0"></div>
+      </div>
+      <label>Jenis rokok</label><input id="a-jenis" placeholder="Misal: kretek filter / rokok putih / elektrik">
+      <label>Skor Fagerstrom (0&ndash;10)</label>
+      <input type="number" id="a-fag" min="0" max="10" required oninput="document.getElementById('a-fag-label').textContent=fagLabel(this.value)">
+      <span id="a-fag-label" class="pill">Isi skor untuk melihat tingkat adiksi</span>
+      <p class="muted">&lt;5 rendah, =5 moderat, &gt;5 tinggi. Farmakologi dibahas dengan dokter bila skor &gt;5; nonfarmakologi diutamakan.</p>
+      <p><b>Telaah:</b> motivasi dan tahap perubahan.</p>
+      <label>Motivasi berhenti (0&ndash;10): <span id="a-mot-val">5</span></label>
+      <input type="range" id="a-mot" min="0" max="10" value="5" oninput="document.getElementById('a-mot-val').textContent=this.value">
+      <p class="muted">0 = tanpa motivasi sama sekali, 10 = sangat termotivasi (Skala Motivasi, Modul TOT UBM).</p>
+      <label>Tahap perubahan</label>
+      <select id="a-tahap"><option>Praperenungan</option><option>Perenungan</option><option>Persiapan</option><option>Aksi</option><option>Pemeliharaan</option><option>Kekambuhan</option></select>
+      <p><b>Tolong &amp; Nasehati:</b> tentukan tanggal berhenti bersama klien.</p>
+      <div class="row">
+        <div><label>Tanggal berhenti</label><input type="date" id="a-berhenti"></div>
+        <div><label>Metode berhenti</label><select id="a-metode"><option>Seketika</option><option>Penundaan</option><option>Pengurangan</option></select></div>
+      </div>
+      <label>Dukungan keluarga / lingkungan bebas asap rokok</label><input id="a-dukung" placeholder="Siapa yang mendukung di rumah?">
+      <button class="btn" type="submit">Simpan Konseling Awal (Konseling 1)</button>
+    </form>
+
+    <h3>B. Konseling Lanjutan &amp; FU</h3>
+    <p class="muted">Konseling lanjutan 2 minggu sekali selama 3 bulan pertama, minimal 6 pertemuan. FU: 3&ndash;7 hari via telepon/WA; 10 hari&ndash;2 minggu, 1, 3, 6, 12 bulan tatap muka. CO &lt;10 ppm = sudah tidak merokok.</p>
+    <form onsubmit="return simpanFU(event)">
+      <div class="row">
+        <div><label>Tanggal</label><input type="date" id="f-tgl" required></div>
+        <div><label>Jenis</label><select id="f-jenis"><option>Konseling 2</option><option>Konseling 3</option><option>Konseling 4</option><option>Konseling 5</option><option>Konseling 6</option><option>FU telepon-WA</option><option>FU tatap muka</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Status merokok</label><select id="f-status"><option>Sudah berhenti</option><option>Masih merokok</option><option>Berkurang</option><option>Kambuh</option></select></div>
+        <div><label>CO (ppm, bila ada alat)</label><input type="number" id="f-co" step="0.1" placeholder="CO <10 ppm = tidak merokok"></div>
+      </div>
+      <div class="row">
+        <div><label>BB (kg)</label><input type="number" id="f-bb" step="0.1"></div>
+        <div><label>TD (mmHg)</label><input id="f-td" placeholder="Misal: 120/80"></div>
+      </div>
+      <label>Kendala / gejala putus nikotin</label><textarea id="f-kendala" placeholder="Misal: gelisah, insomnia, keinginan kuat pagi hari..."></textarea>
+      <label>Tindak lanjut / rencana</label><textarea id="f-tindak" placeholder="Penguatan, strategi baru, tanggal FU berikutnya..."></textarea>
+      <button class="btn" type="submit">Simpan Konseling / FU</button>
+    </form>
+
+    <h3>C. Ubah Status Akhir Klien</h3>
+    <p class="muted">SUKSES = berhenti 1 tahun terus-menerus. KAMBUH = kembali merokok, kembali ke layanan dan buat tanggal berhenti baru. DO = dicatat dan ditawarkan kembali.</p>
+    <div class="row">
+      <div><select id="s-status"><option>Aktif</option><option>SUKSES</option><option>KAMBUH</option><option>DO</option><option>Dirujuk</option></select></div>
+      <div><button class="btn2" type="button" onclick="ubahStatus()">Ubah Status</button></div>
+    </div>
+  </section>
+
+  <section id="tab-jadwal" class="card hidden">
+    <h2>Jadwal Perjanjian</h2>
+    <p class="muted">Hanya Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, setelah layanan reguler. Maksimal 2 klien per hari; tahap awal 5&ndash;10 klien aktif.</p>
+    <form onsubmit="return simpanJadwal(event)">
+      <div class="row">
+        <div><label>Tanggal</label><input type="date" id="j-tgl" required onchange="isiHari()"></div>
+        <div><label>Hari</label><input id="j-hari" readonly></div>
+      </div>
+      <label>Jam</label><input value="12.00-13.00 WITA" readonly>
+      <label>Pilih klien</label><input id="j-cari" list="klien-list" placeholder="Ketik nama..." onchange="pilihJadwal()">
+      <button class="btn" type="submit">Buat Perjanjian</button>
+    </form>
+    <h3>Daftar Jadwal</h3>
+    <div id="daftar-jadwal" style="overflow-x:auto"></div>
+  </section>
+
+  <section id="tab-panduan" class="card hidden">
+    <h2>Panduan Singkat (dari Modul TOT UBM Kemenkes)</h2>
+    <h3>Metode 4T</h3>
+    <ol>
+      <li><b>Tanyakan:</b> tipe klien, profil perokok, tingkat adiksi (Fagerstrom).</li>
+      <li><b>Telaah:</b> motivasi 0&ndash;10 dan tahap perubahan (praperenungan, perenungan, persiapan, aksi, pemeliharaan, kekambuhan).</li>
+      <li><b>Tolong &amp; Nasehati:</b> tanggal berhenti, metode seketika/penundaan/pengurangan, antisipasi gejala putus nikotin, dukungan keluarga.</li>
+      <li><b>Tindak Lanjut:</b> FU 3&ndash;7 hari (telepon/WA), lalu 10 hari&ndash;2 minggu, 1, 3, 6, 12 bulan.</li>
+    </ol>
+    <h3>Belum mau berhenti? Pakai 5Rs (3&ndash;5 menit di poli)</h3>
+    <p>Relevance (dampak untuk diri &amp; keluarga), Risks (dampak negatif), Rewards (manfaat berhenti), Roadblocks (tantangan), Repetition (tanyakan status terus-menerus).</p>
+    <h3>Penilaian &amp; Rujukan</h3>
+    <p>CAR 3/6/9 = lama berhenti terus-menerus dalam bulan. Rujuk ke FKRTL (RSUP NTB) bila: gagal setelah 3 bulan/6 pertemuan, dependensi sedang&ndash;berat, komorbid berat, atau withdrawal tak tertangani. Cadangan gratis: Quitline-INA <b>0-800-177-6565</b>.</p>
+    <h3>Yang TIDAK dilakukan di fase awal</h3>
+    <p>Tidak melibatkan kader, tidak konseling di pustu, tidak mengubah aplikasi ERM, tidak ruangan baru. Target utama: pasien dewasa/lansia klaster 3.</p>
+  </section>
+</main>
+<script>
+var DATA={klien:[],konseling:[],jadwal:[]};
+var klienTerpilih=null, jadwalTerpilih=null;
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showMsg(html,cls){document.getElementById('msg').innerHTML='<div class="'+cls+'">'+html+'</div>'; window.scrollTo(0,0)}
+function fagLabel(v){v=Number(v); if(isNaN(v)) return 'Isi skor untuk melihat tingkat adiksi'; if(v<5) return 'Rendah (<5)'; if(v===5) return 'Moderat (=5)'; return 'Tinggi (>5)'}
+function maskNik(nik){nik=String(nik||''); return nik.length>4 ? '****'+nik.slice(-4) : nik}
+function hariIndo(d){var h=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; return h[new Date(d+'T00:00:00').getDay()]}
+function isiHari(){var t=document.getElementById('j-tgl').value; document.getElementById('j-hari').value=t?hariIndo(t):''}
+document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){
+  document.querySelectorAll('nav button').forEach(function(x){x.classList.remove('on')}); b.classList.add('on');
+  document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')});
+  document.getElementById('tab-'+b.dataset.tab).classList.remove('hidden');
+}});
+function todayStr(){var d=new Date(); return d.toISOString().slice(0,10)}
+['b-tgl','a-tgl','f-tgl'].forEach(function(id){var el=document.getElementById(id); if(el) el.value=todayStr()});
+var API_URL='https://script.google.com/macros/s/AKfycbyrd06NCIlqRu1lP37kZzEdAtNVA7rCJWisu29MWSrZZ3piagsxVdFhDk-QJeyQasJvEw/exec';
+function run(fn,arg,ok){ if(!API_URL||API_URL.indexOf('___')>=0){ showMsg('API belum disetel. Isi API_URL di atas dengan URL /exec dari deployment API Apps Script, lalu push ulang ke GitHub.','err'); return; }
+  var url=API_URL+(API_URL.indexOf('?')>=0?'&':'?')+'action='+encodeURIComponent(fn)+'&payload='+encodeURIComponent(JSON.stringify(arg||{}));
+  fetch(url).then(function(r){return r.json()}).then(function(d){ if(!d.ok) throw new Error(d.error||'Gagal memanggil API'); ok(d.data); }).catch(function(e){showMsg(esc(e.message||e),'err')}) }
+function muat(){ run('getData',null,function(d){ DATA=d; renderAll(); }) }
+function renderAll(){ renderStats(); renderKlien(); renderJadwal(); var dl=document.getElementById('klien-list'); dl.innerHTML=DATA.klien.map(function(r){return '<option value="'+esc(r.values[3])+' | '+esc(r.values[2])+'">'}).join('') }
+function renderStats(){
+  var k=DATA.klien, total=k.length;
+  var hit=function(s){return k.filter(function(r){return r.values[16]===s}).length};
+  var sukses=hit('SUKSES'), kambuh=hit('KAMBUH'), do_=hit('DO'), rujuk=hit('Dirujuk'), aktif=hit('Aktif');
+  var pct=function(n){return total?Math.round(n/total*100)+'%':'-'};
+  document.getElementById('stats').innerHTML=
+    '<div class="stat"><b>'+total+'</b>Total klien</div>'+
+    '<div class="stat"><b>'+aktif+'</b>Aktif</div>'+
+    '<div class="stat"><b>'+sukses+'</b>SUKSES ('+pct(sukses)+')</div>'+
+    '<div class="stat"><b>'+kambuh+'</b>Kambuh</div>'+
+    '<div class="stat"><b>'+do_+'</b>DO ('+pct(do_)+')</div>'+
+    '<div class="stat"><b>'+rujuk+'</b>Dirujuk ('+pct(rujuk)+')</div>'+
+    '<div class="stat"><b>'+DATA.konseling.length+'</b>Catatan konseling/FU</div>'+
+    '<div class="stat"><b>'+DATA.jadwal.length+'</b>Perjanjian tercatat</div>';
+  var now=todayStr();
+  var dekat=DATA.jadwal.filter(function(r){return String(r.values[0])>=now}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}).slice(0,5);
+  document.getElementById('jadwal-dekat').innerHTML=dekat.length? '<table><tr><th>Tanggal</th><th>Nama</th><th>Kehadiran</th></tr>'+dekat.map(function(r){return '<tr><td>'+esc(r.values[0])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5]||'-')+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada jadwal mendatang.</p>';
+}
+function renderKlien(){
+  var q=(document.getElementById('cari').value||'').toLowerCase();
+  var f=document.getElementById('filter-status').value;
+  var rows=DATA.klien.filter(function(r){ var s=(r.values[3]+' '+r.values[2]).toLowerCase(); return (!q||s.indexOf(q)>=0) && (!f||r.values[16]===f) });
+  document.getElementById('daftar-klien').innerHTML=rows.length? '<table><tr><th>Nama</th><th>NIK</th><th>Status</th><th></th></tr>'+rows.map(function(r){
+    return '<tr><td>'+esc(r.values[3])+'</td><td>'+maskNik(r.values[2])+'</td><td>'+esc(r.values[16]||'Aktif')+'</td><td><button class="btn2" onclick="detailKlien(\''+esc(r.values[2])+'\')">Detail</button></td></tr>'}).join('')+'</table>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+}
+function detailKlien(nik){
+  var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
+  if(!k) return;
+  var riw=DATA.konseling.filter(function(r){return String(r.values[0])===String(nik)});
+  var jad=DATA.jadwal.filter(function(r){return String(r.values[3])===String(nik)});
+  document.getElementById('detail-klien').innerHTML='<div class="card" style="border:1px solid #047857"><h3>'+esc(k.values[3])+'</h3>'+
+    '<p>NIK: '+esc(k.values[2])+' &middot; Lahir: '+esc(k.values[4])+' &middot; '+esc(k.values[5])+' &middot; HP: '+esc(k.values[7])+'</p>'+
+    '<p>Alamat: '+esc(k.values[6])+'</p>'+
+    '<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16])+'</b></p>'+
+    '<h3>Riwayat konseling/FU ('+riw.length+')</h3>'+(riw.length? '<table><tr><th>Tanggal</th><th>Jenis</th><th>Status</th><th>CO</th><th>Kendala</th></tr>'+riw.map(function(r){return '<tr><td>'+esc(r.values[2])+'</td><td>'+esc(r.values[3])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5])+'</td><td>'+esc(r.values[8])+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada catatan.</p>')+
+    '<h3>Perjanjian ('+jad.length+')</h3>'+(jad.length? jad.map(function(r){return '<p>'+esc(r.values[0])+' ('+esc(r.values[1])+') &mdash; '+esc(r.values[5]||'belum dicatat')+'</p>'}).join('') : '<p class="muted">Belum ada perjanjian.</p>')+'</div>';
+  klienTerpilih=k; document.getElementById('k-cari').value=k.values[3]+' | '+k.values[2];
+  document.getElementById('klien-terpilih').textContent='Klien terpilih: '+k.values[3]+' (NIK '+maskNik(k.values[2])+')';
+}
+function cariKlienDariTeks(teks){
+  if(!teks) return null; var nik=teks.split('|').pop().trim();
+  return DATA.klien.find(function(r){return String(r.values[2])===nik}) || DATA.klien.find(function(r){return String(r.values[3]).toLowerCase()===teks.trim().toLowerCase()}) || null;
+}
+function pilihKlien(){ var k=cariKlienDariTeks(document.getElementById('k-cari').value); if(k){klienTerpilih=k; document.getElementById('klien-terpilih').textContent='Klien terpilih: '+k.values[3]+' (NIK '+maskNik(k.values[2])+')'} }
+function pilihJadwal(){ var k=cariKlienDariTeks(document.getElementById('j-cari').value); if(k) jadwalTerpilih=k }
+function simpanKlien(e){ e.preventDefault();
+  var o={tanggalDaftar:document.getElementById('b-tgl').value, nik:document.getElementById('b-nik').value, nama:document.getElementById('b-nama').value, tanggalLahir:document.getElementById('b-lahir').value, lp:document.getElementById('b-lp').value, alamat:document.getElementById('b-alamat').value, noHp:document.getElementById('b-hp').value, pendidikan:document.getElementById('b-didik').value, pekerjaan:document.getElementById('b-kerja').value, statusKawin:document.getElementById('b-kawin').value, golDarah:document.getElementById('b-gol').value, skorFagerstrom:'', motivasi:'', tahap:'', tanggalBerhenti:'', status:'Aktif'};
+  if(o.nik.replace(/\D/g,'').length!==16){showMsg('NIK harus 16 digit angka.','err'); return false}
+  run('saveKlien',o,function(){showMsg('Klien tersimpan. Lanjutkan ke Konseling Awal (4T).','ok'); muat()}); return false }
+function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){pilihKlien()} if(!klienTerpilih){showMsg('Pilih klien dulu di kolom atas.','err'); return false}
+  var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('a-tgl').value, batangPerHari:document.getElementById('a-batang').value, usiaMulai:document.getElementById('a-usia').value, jenisRokok:document.getElementById('a-jenis').value, skorFagerstrom:document.getElementById('a-fag').value, motivasi:document.getElementById('a-mot').value, tahap:document.getElementById('a-tahap').value, tanggalBerhenti:document.getElementById('a-berhenti').value, metode:document.getElementById('a-metode').value, dukungan:document.getElementById('a-dukung').value};
+  run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui.','ok'); muat()}); return false }
+function simpanFU(e){ e.preventDefault(); if(!klienTerpilih){pilihKlien()} if(!klienTerpilih){showMsg('Pilih klien dulu di kolom atas.','err'); return false}
+  var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('f-tgl').value, jenis:document.getElementById('f-jenis').value, statusMerokok:document.getElementById('f-status').value, co:document.getElementById('f-co').value, bb:document.getElementById('f-bb').value, td:document.getElementById('f-td').value, kendala:document.getElementById('f-kendala').value, tindak:document.getElementById('f-tindak').value};
+  run('saveKonseling',o,function(){showMsg('Catatan konseling/FU tersimpan.','ok'); muat()}); return false }
+function ubahStatus(){ if(!klienTerpilih){pilihKlien()} if(!klienTerpilih){showMsg('Pilih klien dulu.','err'); return}
+  run('updateKlienStatus',{nik:klienTerpilih.values[2], status:document.getElementById('s-status').value},function(){showMsg('Status klien diperbarui.','ok'); muat()}) }
+function renderJadwal(){
+  var rows=DATA.jadwal.slice().sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1});
+  document.getElementById('daftar-jadwal').innerHTML=rows.length? '<table><tr><th>Tanggal</th><th>Hari</th><th>Nama</th><th>Kehadiran</th><th>Aksi</th></tr>'+rows.map(function(r){return '<tr><td>'+esc(r.values[0])+'</td><td>'+esc(r.values[1])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5]||'-')+'</td><td><button class="btn2" onclick="tandaiHadir('+r.row+',\'Hadir\')">Hadir</button> <button class="btn2" onclick="tandaiHadir('+r.row+',\'Tidak hadir\')">Tidak hadir</button></td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada jadwal.</p>';
+}
+function tandaiHadir(row,hadir){ run('updateKehadiran',{row:row, kehadiran:hadir, keterangan:''},function(){showMsg('Kehadiran diperbarui.','ok'); muat()}) }
+function simpanJadwal(e){ e.preventDefault(); if(!jadwalTerpilih){pilihJadwal()} if(!jadwalTerpilih){showMsg('Pilih klien dulu.','err'); return false}
+  var t=document.getElementById('j-tgl').value;
+  run('saveJadwal',{tanggal:t, hari:hariIndo(t), jam:'12.00-13.00 WITA', nik:jadwalTerpilih.values[2], nama:jadwalTerpilih.values[3], kehadiran:'', keterangan:''},function(){showMsg('Perjanjian tersimpan.','ok'); muat()}); return false }
+muat();
+</script>
+</body>
+</html>
