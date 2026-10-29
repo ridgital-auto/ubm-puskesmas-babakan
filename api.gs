@@ -32,6 +32,7 @@ function doGet(e) {
     else if (action === 'updateKehadiran') result = updateKehadiran(payload);
     else if (action === 'deleteKonselingRow') result = deleteKonselingRow(payload);
     else if (action === 'deleteKlien') result = deleteKlien(payload);
+    else if (action === 'updateKonselingRow') result = updateKonselingRow(payload);
     else throw new Error('Aksi tidak dikenal: ' + action);
     lock.releaseLock();
     return jsonOut_({ ok: true, data: result });
@@ -304,6 +305,18 @@ function deleteKlien(o) {
   }
   ss_().getSheetByName(TAB_KLIEN).deleteRow(r);
   return { ok: true, hapusKonseling: hapusKonseling, hapusJadwal: hapusJadwal };
+}
+
+function updateKonselingRow(o) {
+  // o: row (nomor baris Sheet di tab Konseling & FU) + tanggal, jenis, statusMerokok, co, bb, td, kendala, tindak.
+  // Mengubah satu baris riwayat berdasarkan tanggal/barisnya; NIK dan nama tidak diubah.
+  var sheet = ss_().getSheetByName(TAB_KONSELING);
+  var last = sheet.getLastRow();
+  if (!o.row || o.row < 2 || o.row > last) throw new Error('Baris riwayat tidak ditemukan.');
+  var co = (o.co === '' || o.co === null || o.co === undefined) ? '' : Number(o.co);
+  var bb = (o.bb === '' || o.bb === null || o.bb === undefined) ? '' : Number(o.bb);
+  sheet.getRange(o.row, 3, 1, 8).setValues([[o.tanggal || '', o.jenis || '', o.statusMerokok || '', co, bb, o.td || '', o.kendala || '', o.tindak || '']]);
+  return { ok: true };
 }
 
 function updateKehadiran(o) {
