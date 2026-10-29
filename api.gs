@@ -172,7 +172,8 @@ function saveKonselingAwal(o) {
   var label = fagerstromLabel_(o.skorFagerstrom);
   var ringkas = 'Konseling awal 4T. Profil: ' + (o.batangPerHari || '-') + ' batang/hari, mulai merokok usia ' +
     (o.usiaMulai || '-') + ', jenis: ' + (o.jenisRokok || '-') + '. Fagerstrom ' + o.skorFagerstrom +
-    ' (' + label + '), motivasi ' + o.motivasi + '/10, tahap: ' + (o.tahap || '-') + '.';
+    ' (' + label + '), motivasi ' + o.motivasi + '/10, tahap: ' + (o.tahap || '-') + '.' +
+    (o.vapeInfo ? ' Rokok elektronik: ' + o.vapeInfo : '');
   var tindak = 'Tanggal berhenti: ' + (o.tanggalBerhenti || '(belum ditentukan)') +
     '. Metode: ' + (o.metode || '-') + '. Dukungan keluarga: ' + (o.dukungan || '-') +
     '. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.';
@@ -185,6 +186,20 @@ function saveKonseling(o) {
   // o: nik, nama, tanggal, jenis, statusMerokok, co, bb, td, kendala, tindak
   var r = findKlienRowByNik_(o.nik);
   if (r < 0) throw new Error('Klien tidak ditemukan. Daftarkan dulu di Klien Baru.');
+  // Penilaian ulang opsional dari form toggle: perbarui kolom Klien M/N bila diisi
+  if (o.skorFagerstrom !== '' && o.skorFagerstrom !== null && o.skorFagerstrom !== undefined) {
+    ss_().getSheetByName(TAB_KLIEN).getRange(r, 13).setValue(Number(o.skorFagerstrom));
+  }
+  if (o.motivasi !== '' && o.motivasi !== null && o.motivasi !== undefined) {
+    ss_().getSheetByName(TAB_KLIEN).getRange(r, 14).setValue(Number(o.motivasi));
+  }
+  var tindak = o.tindak || '';
+  var penilaian = [];
+  if (o.skorFagerstrom !== '' && o.skorFagerstrom !== null && o.skorFagerstrom !== undefined) penilaian.push('Fagerstrom ' + o.skorFagerstrom + ' (' + fagerstromLabel_(o.skorFagerstrom) + ')');
+  if (o.motivasi !== '' && o.motivasi !== null && o.motivasi !== undefined) penilaian.push('Motivasi ' + o.motivasi + '/10');
+  if (o.jenisRokok) penilaian.push('Jenis rokok: ' + o.jenisRokok);
+  if (o.vapeInfo) penilaian.push('Rokok elektronik: ' + o.vapeInfo);
+  if (penilaian.length) tindak = (tindak ? tindak + ' | ' : '') + 'Penilaian: ' + penilaian.join('; ');
   var ks = ss_().getSheetByName(TAB_KONSELING);
   ks.appendRow([
     o.nik, o.nama || '', o.tanggal || '', o.jenis || '',
@@ -192,17 +207,31 @@ function saveKonseling(o) {
     o.co === '' || o.co === null ? '' : Number(o.co),
     o.bb === '' || o.bb === null ? '' : Number(o.bb),
     o.td || '',
-    o.kendala || '', o.tindak || ''
+    o.kendala || '', tindak
   ]);
   return { ok: true };
 }
 
 function updateKlienStatus(o) {
   // o: nik, status
+  // Aturan baru: SUKSES hanya setelah CAR 12 tercatat di tab Konseling & FU.
+  // Yang belum berhenti dicatat Konseling 1-6, yang sudah berhenti dicatat CAR 1-12.
   var allowed = ['Aktif', 'SUKSES', 'KAMBUH', 'DO', 'Dirujuk'];
   if (allowed.indexOf(o.status) < 0) throw new Error('Status tidak dikenal.');
   var r = findKlienRowByNik_(o.nik);
   if (r < 0) throw new Error('Klien tidak ditemukan.');
+  if (o.status === 'SUKSES') {
+    var ks = ss_().getSheetByName(TAB_KONSELING);
+    var last = ks.getLastRow();
+    var hasCAR12 = false;
+    if (last >= 2) {
+      var vals = ks.getRange(2, 1, last - 1, 4).getValues();
+      for (var i = 0; i < vals.length; i++) {
+        if (String(vals[i][0]).replace(/\D/g, '') === String(o.nik).replace(/\D/g, '') && String(vals[i][3]) === 'CAR 12') { hasCAR12 = true; break; }
+      }
+    }
+    if (!hasCAR12) throw new Error('SUKSES hanya bisa dipilih setelah CAR 12 tercatat untuk klien ini.');
+  }
   ss_().getSheetByName(TAB_KLIEN).getRange(r, 17).setValue(o.status);
   return { ok: true };
 }
