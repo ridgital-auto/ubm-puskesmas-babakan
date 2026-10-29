@@ -30,6 +30,8 @@ function doGet(e) {
     else if (action === 'updateKlienStatus') result = updateKlienStatus(payload);
     else if (action === 'saveJadwal') result = saveJadwal(payload);
     else if (action === 'updateKehadiran') result = updateKehadiran(payload);
+    else if (action === 'deleteKonselingRow') result = deleteKonselingRow(payload);
+    else if (action === 'deleteKlien') result = deleteKlien(payload);
     else throw new Error('Aksi tidak dikenal: ' + action);
     lock.releaseLock();
     return jsonOut_({ ok: true, data: result });
@@ -266,6 +268,42 @@ function saveJadwal(o) {
     o.nik || '', o.nama || '', o.kehadiran || '', o.keterangan || ''
   ]);
   return { ok: true, sudahTerisi: count + 1 };
+}
+
+function deleteKonselingRow(o) {
+  // o: row (nomor baris Sheet di tab Konseling & FU). Hapus 1 baris riwayat berdasarkan tanggal/barisnya.
+  var sheet = ss_().getSheetByName(TAB_KONSELING);
+  var last = sheet.getLastRow();
+  if (!o.row || o.row < 2 || o.row > last) throw new Error('Baris riwayat tidak ditemukan.');
+  sheet.deleteRow(o.row);
+  return { ok: true };
+}
+
+function deleteKlien(o) {
+  // o: nik. Hapus klien + semua riwayat konseling/FU + semua jadwal untuk NIK itu (dari bawah ke atas).
+  var nik = String(o.nik || '').replace(/\D/g, '');
+  var r = findKlienRowByNik_(nik);
+  if (r < 0) throw new Error('Klien tidak ditemukan.');
+  var ks = ss_().getSheetByName(TAB_KONSELING);
+  var last = ks.getLastRow();
+  var hapusKonseling = 0;
+  if (last >= 2) {
+    var vals = ks.getRange(2, 1, last - 1, 1).getValues();
+    for (var i = vals.length - 1; i >= 0; i--) {
+      if (String(vals[i][0]).replace(/\D/g, '') === nik) { ks.deleteRow(i + 2); hapusKonseling++; }
+    }
+  }
+  var js = ss_().getSheetByName(TAB_JADWAL);
+  last = js.getLastRow();
+  var hapusJadwal = 0;
+  if (last >= 2) {
+    var jvals = js.getRange(2, 4, last - 1, 1).getValues();
+    for (var j = jvals.length - 1; j >= 0; j--) {
+      if (String(jvals[j][0]).replace(/\D/g, '') === nik) { js.deleteRow(j + 2); hapusJadwal++; }
+    }
+  }
+  ss_().getSheetByName(TAB_KLIEN).deleteRow(r);
+  return { ok: true, hapusKonseling: hapusKonseling, hapusJadwal: hapusJadwal };
 }
 
 function updateKehadiran(o) {
