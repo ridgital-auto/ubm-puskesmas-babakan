@@ -24,3 +24,11 @@ Revisi berikutnya:
 
 Catatan keamanan: URL API dan link GitHub Pages hanya untuk Tim UBM,
 jangan dipublikasikan, karena lewat API itu orang bisa menambah data ke Sheet.
+
+## Live (per 30 Okt 2026, terverifikasi)
+- Web app (GitHub Pages): https://ridgital-auto.github.io/ubm-puskesmas-babakan/
+- Repo: https://github.com/ridgital-auto/ubm-puskesmas-babakan (branch main, commit pertama 905b679)
+- API Apps Script (deployment versi 1, 30 Okt 2026 01:04 WITA, Jalankan sebagai ridgitalstudio, akses Siapa pun):
+  https://script.google.com/macros/s/AKfycbyrd06NCIlqRu1lP37kZzEdAtNVA7rCJWisu29MWSrZZ3piagsxVdFhDk-QJeyQasJvEw/exec
+- Database: Sheet "e-RM UBM Puskesmas Babakan" (ID 16h7TiyO2quO1xR7IHcHNh0fe0Gy_mrc2djFZhgThKDo), tetap privat.
+- Link web app dan API hanya untuk Tim UBM, jangan dipublikasikan.
