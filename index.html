@@ -35,7 +35,6 @@
   <button class="on" data-tab="beranda">Beranda</button>
   <button data-tab="klien">Daftar Klien</button>
   <button data-tab="baru">Klien Baru</button>
-  <button data-tab="jadwal">Jadwal</button>
   <button data-tab="panduan">Panduan 4T</button>
 </nav>
 <main>
@@ -199,24 +198,19 @@
       <div><select id="s-status"></select></div>
       <div><button class="btn2" type="button" onclick="ubahStatus()">Ubah Status</button></div>
     </div>
-    </div>
-  </section>
-
-  <section id="tab-jadwal" class="card hidden">
-    <datalist id="klien-list"></datalist>
-    <h2>Jadwal Perjanjian</h2>
-    <p class="muted">Hanya Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, setelah layanan reguler. Maksimal 2 klien per hari; tahap awal 5&ndash;10 klien aktif.</p>
-    <form onsubmit="return simpanJadwal(event)">
+    <h3>D. Jadwal Selanjutnya</h3>
+    <p class="muted">Tentukan perjanjian berikutnya untuk klien ini. Hanya Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, setelah layanan reguler. Maksimal 2 klien per hari.</p>
+    <form onsubmit="return simpanJadwalBaru(event)">
       <div class="row">
-        <div><label>Tanggal</label><input type="date" id="j-tgl" required onchange="isiHari()"></div>
-        <div><label>Hari</label><input id="j-hari" readonly></div>
+        <div><label>Tanggal</label><input type="date" id="pk-j-tgl" required onchange="isiHariBaru()"></div>
+        <div><label>Hari</label><input id="pk-j-hari" readonly></div>
       </div>
       <label>Jam</label><input value="12.00-13.00 WITA" readonly>
-      <label>Pilih klien</label><input id="j-cari" list="klien-list" placeholder="Ketik nama..." onchange="pilihJadwal()">
-      <button class="btn" type="submit">Buat Perjanjian</button>
+      <button class="btn" type="submit">Buat Perjanjian untuk Klien Ini</button>
     </form>
-    <h3>Daftar Jadwal</h3>
-    <div id="daftar-jadwal" style="overflow-x:auto"></div>
+    <h3>Perjanjian klien ini</h3>
+    <div id="pk-jadwal" style="overflow-x:auto"></div>
+    </div>
   </section>
 
   <section id="tab-panduan" class="card hidden">
@@ -238,13 +232,12 @@
 </main>
 <script>
 var DATA={klien:[],konseling:[],jadwal:[]};
-var klienTerpilih=null, jadwalTerpilih=null;
+var klienTerpilih=null;
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function showMsg(html,cls){document.getElementById('msg').innerHTML='<div class="'+cls+'">'+html+'</div>'; window.scrollTo(0,0)}
 function fagLabel(v){v=Number(v); if(isNaN(v)) return 'Isi skor untuk melihat tingkat adiksi'; if(v<5) return 'Rendah (<5)'; if(v===5) return 'Moderat (=5)'; return 'Tinggi (>5)'}
 function maskNik(nik){nik=String(nik||''); return nik.length>4 ? '****'+nik.slice(-4) : nik}
 function hariIndo(d){var h=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; return h[new Date(d+'T00:00:00').getDay()]}
-function isiHari(){var t=document.getElementById('j-tgl').value; document.getElementById('j-hari').value=t?hariIndo(t):''}
 document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){
   document.querySelectorAll('nav button').forEach(function(x){x.classList.remove('on')}); b.classList.add('on');
   document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')});
@@ -256,8 +249,8 @@ var API_URL='https://script.google.com/macros/s/AKfycbyrd06NCIlqRu1lP37kZzEdAtNV
 function run(fn,arg,ok){ if(!API_URL||API_URL.indexOf('___')>=0){ showMsg('API belum disetel. Isi API_URL di atas dengan URL /exec dari deployment API Apps Script, lalu push ulang ke GitHub.','err'); return; }
   var url=API_URL+(API_URL.indexOf('?')>=0?'&':'?')+'action='+encodeURIComponent(fn)+'&payload='+encodeURIComponent(JSON.stringify(arg||{}));
   fetch(url).then(function(r){return r.json()}).then(function(d){ if(!d.ok) throw new Error(d.error||'Gagal memanggil API'); ok(d.data); }).catch(function(e){showMsg(esc(e.message||e),'err')}) }
-function muat(){ run('getData',null,function(d){ DATA=d; renderAll(); }) }
-function renderAll(){ renderStats(); renderKlien(); renderJadwal(); var dl=document.getElementById('klien-list'); dl.innerHTML=DATA.klien.map(function(r){return '<option value="'+esc(r.values[3])+' | '+esc(r.values[2])+'">'}).join('') }
+function muat(){ run('getData',null,function(d){ DATA=d; renderAll(); if(klienTerpilih && !document.getElementById('page-konseling').classList.contains('hidden')){ renderRiwayat(); renderJadwalKlien(); renderStatusOptions(); } }) }
+function renderAll(){ renderStats(); renderKlien(); }
 function renderStats(){
   var k=DATA.klien, total=k.length;
   var hit=function(s){return k.filter(function(r){return r.values[16]===s}).length};
@@ -300,7 +293,6 @@ function cariKlienDariTeks(teks){
   if(!teks) return null; var nik=teks.split('|').pop().trim();
   return DATA.klien.find(function(r){return String(r.values[2])===nik}) || DATA.klien.find(function(r){return String(r.values[3]).toLowerCase()===teks.trim().toLowerCase()}) || null;
 }
-function pilihJadwal(){ var k=cariKlienDariTeks(document.getElementById('j-cari').value); if(k) jadwalTerpilih=k }
 function toggleForm(boxId,btnId,label){ var box=document.getElementById(boxId); var btn=document.getElementById(btnId); box.classList.toggle('hidden'); btn.textContent=box.classList.contains('hidden') ? 'Tampilkan '+label : 'Sembunyikan '+label; }
 function toggleVape(selId,boxId){ var v=document.getElementById(selId).value; document.getElementById(boxId).classList.toggle('hidden', v.indexOf('elektronik')<0 && v.indexOf('Keduanya')<0); }
 function hasCAR12(nik){ return DATA.konseling.some(function(r){return String(r.values[0])===String(nik) && String(r.values[3])==='CAR 12'}); }
@@ -342,6 +334,7 @@ function pkTab(tab){
   document.getElementById('pk-riwayat').classList.toggle('hidden', tab!=='riwayat');
   document.getElementById('pk-form').classList.toggle('hidden', tab!=='form');
   if(tab==='riwayat') renderRiwayat();
+  if(tab==='form') renderJadwalKlien();
 }
 function renderRiwayat(){
   if(!klienTerpilih) return;
@@ -368,14 +361,17 @@ function simpanFU(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien
   run('saveKonseling',o,function(){showMsg('Catatan konseling/FU tersimpan.','ok'); muat()}); return false }
 function ubahStatus(){ if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return}
   run('updateKlienStatus',{nik:klienTerpilih.values[2], status:document.getElementById('s-status').value},function(){showMsg('Status klien diperbarui.','ok'); muat()}) }
-function renderJadwal(){
-  var rows=DATA.jadwal.slice().sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1});
-  document.getElementById('daftar-jadwal').innerHTML=rows.length? '<table><tr><th>Tanggal</th><th>Hari</th><th>Nama</th><th>Kehadiran</th><th>Aksi</th></tr>'+rows.map(function(r){return '<tr><td>'+esc(r.values[0])+'</td><td>'+esc(r.values[1])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5]||'-')+'</td><td><button class="btn2" onclick="tandaiHadir('+r.row+',\'Hadir\')">Hadir</button> <button class="btn2" onclick="tandaiHadir('+r.row+',\'Tidak hadir\')">Tidak hadir</button></td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada jadwal.</p>';
+function renderJadwalKlien(){
+  if(!klienTerpilih) return;
+  var nik=klienTerpilih.values[2];
+  var rows=DATA.jadwal.filter(function(r){return String(r.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1});
+  document.getElementById('pk-jadwal').innerHTML=rows.length? '<table><tr><th>Tanggal</th><th>Hari</th><th>Kehadiran</th><th>Aksi</th></tr>'+rows.map(function(r){return '<tr><td>'+esc(r.values[0])+'</td><td>'+esc(r.values[1])+'</td><td>'+esc(r.values[5]||'-')+'</td><td><button class="btn2" onclick="tandaiHadir('+r.row+',\'Hadir\')">Hadir</button> <button class="btn2" onclick="tandaiHadir('+r.row+',\'Tidak hadir\')">Tidak hadir</button></td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada perjanjian untuk klien ini.</p>';
 }
+function isiHariBaru(){var t=document.getElementById('pk-j-tgl').value; document.getElementById('pk-j-hari').value=t?hariIndo(t):''}
 function tandaiHadir(row,hadir){ run('updateKehadiran',{row:row, kehadiran:hadir, keterangan:''},function(){showMsg('Kehadiran diperbarui.','ok'); muat()}) }
-function simpanJadwal(e){ e.preventDefault(); if(!jadwalTerpilih){pilihJadwal()} if(!jadwalTerpilih){showMsg('Pilih klien dulu.','err'); return false}
-  var t=document.getElementById('j-tgl').value;
-  run('saveJadwal',{tanggal:t, hari:hariIndo(t), jam:'12.00-13.00 WITA', nik:jadwalTerpilih.values[2], nama:jadwalTerpilih.values[3], kehadiran:'', keterangan:''},function(){showMsg('Perjanjian tersimpan.','ok'); muat()}); return false }
+function simpanJadwalBaru(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return false}
+  var t=document.getElementById('pk-j-tgl').value;
+  run('saveJadwal',{tanggal:t, hari:hariIndo(t), jam:'12.00-13.00 WITA', nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], kehadiran:'', keterangan:''},function(){showMsg('Perjanjian selanjutnya tersimpan.','ok'); muat()}); return false }
 muat();
 </script>
 </body>
