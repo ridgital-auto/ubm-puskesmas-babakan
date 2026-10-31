@@ -9,7 +9,9 @@
   header{background:linear-gradient(135deg,#dc2626,#ec4899);color:#fff;padding:16px} header h1{margin:0;font-size:20px} header p{margin:4px 0 0;opacity:.9;font-size:13px}
   nav{display:flex;gap:6px;padding:10px;background:#fff;border-bottom:1px solid #ddd;flex-wrap:wrap}
   nav button{border:1px solid #e11d48;background:#fff;color:#e11d48;padding:9px 13px;border-radius:20px;cursor:pointer;font-size:14px}
-  nav button.on{background:#e11d48;color:#fff}
+  nav button.on{background:#e11d48;color:#fff;font-weight:bold}
+  #pk-btn-riwayat,#pk-btn-pertama{border:1px solid #e11d48;background:#fff;color:#e11d48;padding:9px 13px;border-radius:20px;cursor:pointer;font-size:14px;margin-right:6px}
+  #pk-btn-riwayat.on,#pk-btn-pertama.on{background:#e11d48;color:#fff;font-weight:bold}
   main{max-width:980px;margin:0 auto;padding:14px} .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
   h2{margin:0 0 10px;font-size:18px} h3{margin:14px 0 6px;font-size:15px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -114,29 +116,8 @@
     <div id="pk-riwayat">
       <h3>Ringkasan penilaian</h3>
       <div id="pk-ringkas"></div>
-      <div class="prev-card">
-        <h3>Status &amp; Jadwal Klien Ini</h3>
-        <p class="muted">Status dan jadwal sudah menyatu di halaman Pemeriksaan ini, bukan bagian terpisah di bawah.</p>
-        <p><b>Status akhir klien:</b></p>
-        <p id="s-note" class="muted">SUKSES = berhenti 1 tahun terus-menerus, dibuktikan dengan CAR 12. KAMBUH = kembali merokok, kembali ke layanan dan buat tanggal berhenti baru. DO = dicatat dan ditawarkan kembali.</p>
-        <div class="row">
-          <div><select id="s-status"></select></div>
-          <div><button class="btn2" type="button" onclick="ubahStatus()">Ubah Status</button></div>
-        </div>
-        <p><b>Jadwal selanjutnya:</b> hanya Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, setelah layanan reguler. Maksimal 2 klien per hari.</p>
-        <form onsubmit="return simpanJadwalBaru(event)">
-          <div class="row">
-            <div><label>Tanggal</label><input type="date" id="pk-j-tgl" required onchange="isiHariBaru()"></div>
-            <div><label>Hari</label><input id="pk-j-hari" readonly></div>
-          </div>
-          <label>Jam</label><input value="12.00-13.00 WITA" readonly>
-          <button class="btn" type="submit">Buat Perjanjian untuk Klien Ini</button>
-        </form>
-        <h4 style="margin-top:14px">Perjanjian klien ini</h4>
-        <div id="pk-jadwal" style="overflow-x:auto"></div>
-      </div>
       <h3>Riwayat konseling &amp; FU</h3>
-      <p class="muted">Riwayat di bawah hanya untuk klien yang sedang dibuka. Tiap kartu adalah preview satu tanggal pemeriksaan. Di dalam kartu ada status follow up, tombol Pemeriksaan untuk detail lengkap tanggal itu, tombol Follow Up, tombol Edit, dan tombol Hapus Riwayat. Status akhir dan jadwal klien ini sudah menyatu di kartu Status &amp; Jadwal di atas riwayat, bukan bagian terpisah di bawah. Belum berhenti pakai Konseling 1, 2, dst. Sudah berhenti pakai CAR 1, 2, dst (CAR = bulan berhenti terus-menerus).</p>
+      <p class="muted">Riwayat di bawah hanya untuk klien yang sedang dibuka. Tiap kartu adalah preview satu tanggal pemeriksaan. Di dalam kartu ada status follow up, tombol Pemeriksaan untuk detail lengkap tanggal itu, tombol Follow Up, tombol Edit, dan tombol Hapus Riwayat. Status follow up dan jadwal FU tiap tanggal ada di dalam kartunya. Belum berhenti pakai Konseling 1, 2, dst. Sudah berhenti pakai CAR 1, 2, dst (CAR = bulan berhenti terus-menerus).</p>
       <div id="pk-riwayat-tabel" style="overflow-x:auto"></div>
     </div>
 
@@ -619,13 +600,14 @@ function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka kli
     vapeA='Penn State ECDI skor '+ps.total+'/20 ('+psLabel(ps.total)+') ['+psJawaban()+']. Perangkat: '+(document.getElementById('a-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById('a-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById('a-vape-frek').value||'-')+'; Catatan: '+(document.getElementById('a-vape-nyata').value||'-');
   }
   var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('a-tgl').value, batangPerHari:document.getElementById('a-batang').value, usiaMulai:document.getElementById('a-usia').value, jenisRokok:jenisA, vapeInfo:vapeA, skorFagerstrom:fagTotal, motivasi:(document.querySelector('input[name="a-mot-pilih"]:checked')?document.querySelector('input[name="a-mot-pilih"]:checked').value:'5'), motAlasan:'Detail motivasi: Penting '+document.getElementById('a-mot-penting').value+'/10, Yakin '+document.getElementById('a-mot-yakin').value+'/10, Siap '+document.getElementById('a-mot-siap').value+'/10.'+(document.getElementById('a-mot-alasan').value?' Alasan: '+document.getElementById('a-mot-alasan').value:''), tahap:document.getElementById('a-tahap').value, tanggalBerhenti:document.getElementById('a-berhenti').value, metode:document.getElementById('a-metode').value, dukungan:document.getElementById('a-dukung').value};
-  run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui. Bila ini pemeriksaan baru setelah status DO, ubah status kembali ke Aktif di bagian Status &amp; Jadwal di atas Riwayat agar Konseling Pertama terkunci lagi.','ok'); muat()}); return false }
+  run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui. Bila ini pemeriksaan baru setelah status DO, status klien perlu dikembalikan ke Aktif agar Konseling Pertama terkunci lagi.','ok'); muat()}); return false }
 function ubahStatus(){ if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return}
   run('updateKlienStatus',{nik:klienTerpilih.values[2], status:document.getElementById('s-status').value},function(){showMsg('Status klien diperbarui.','ok'); muat()}) }
 function renderJadwalKlien(){
   if(!klienTerpilih) return;
   var nik=klienTerpilih.values[2];
   var rows=DATA.jadwal.filter(function(r){return String(r.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1});
+  if(!document.getElementById('pk-jadwal')) return;
   document.getElementById('pk-jadwal').innerHTML=rows.length? '<table><tr><th>Tanggal</th><th>Hari</th><th>Kehadiran</th><th>Aksi</th></tr>'+rows.map(function(r){return '<tr><td>'+esc(r.values[0])+'</td><td>'+esc(r.values[1])+'</td><td>'+esc(r.values[5]||'-')+'</td><td><button class="btn2" onclick="tandaiHadir('+r.row+',\'Hadir\')">Hadir</button> <button class="btn2" onclick="tandaiHadir('+r.row+',\'Tidak hadir\')">Tidak hadir</button></td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada perjanjian untuk klien ini.</p>';
 }
 function isiHariBaru(){var t=document.getElementById('pk-j-tgl').value; document.getElementById('pk-j-hari').value=t?hariIndo(t):''}
