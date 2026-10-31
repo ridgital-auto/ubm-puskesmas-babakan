@@ -279,6 +279,7 @@
         <div><label>Nama Sekolah</label><input id="a-sekolah" placeholder="Bila peserta didik"></div>
       </div>
       <label>Kelas</label><input id="a-kelas" placeholder="Bila peserta didik">
+      <p class="muted">Semua bagian form ini wajib diisi, kecuali Identitas tambahan, Nilai APE, Tes Nikotin Urin, dan Catatan tambahan.</p>
       <p><b>Tanyakan:</b> profil perokok dan tingkat adiksi.</p>
       <div class="row">
         <div><label>Batang per hari</label><input type="number" id="a-batang" min="0"></div>
@@ -413,7 +414,7 @@
       <p><b>Tolong &amp; Nasehati:</b> tentukan tanggal berhenti bersama klien.</p>
       <div class="row">
         <div><label>Tanggal berhenti</label><input type="date" id="a-berhenti"></div>
-        <div><label>Metode berhenti</label><select id="a-metode"><option>Langsung berhenti</option><option>Bertahap mengurangi jumlah</option><option>Penundaan jam merokok</option></select></div>
+        <div><label>Metode berhenti</label><select id="a-metode"><option>Langsung berhenti</option><option>Bertahap mengurangi jumlah</option><option>Penundaan jam merokok</option><option>Masih merokok</option></select></div>
       </div>
       <label>Dukungan keluarga / lingkungan bebas asap rokok</label><input id="a-dukung" placeholder="Siapa yang mendukung di rumah?">
       <p><b>Yang disampaikan (Lampiran 1, centang yang sudah disampaikan):</b></p>
@@ -909,6 +910,34 @@ function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka kli
   var fagTotal=hitungFag(); var lengkap=true; for(var i=1;i<=6;i++){ if(!document.querySelector('input[name="fag'+i+'"]:checked')) lengkap=false; }
   if(!lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false}
   var motPilih=document.querySelector('input[name="a-mot-pilih"]:checked'); if(!motPilih){showMsg('Pilih satu pernyataan Kuesioner Skala Motivasi dulu.','err'); return false}
+  var kurang=[];
+  function perlu(id,label){ if(!val(id)) kurang.push(label); }
+  perlu('a-tgl','Tanggal konseling awal');
+  perlu('a-batang','Batang per hari');
+  perlu('a-usia','Usia mulai merokok');
+  perlu('a-alasan-mulai','Alasan mulai merokok');
+  var lamaOk=!!val('a-lama');
+  if(!lamaOk && klienTerpilih && klienTerpilih.values[4] && val('a-usia')){ var uu=umurSaat(klienTerpilih.values[4], val('a-tgl')); if(uu!=='' && uu>=Number(val('a-usia'))) lamaOk=true; }
+  if(!lamaOk) kurang.push('Lama merokok (tahun)');
+  perlu('a-keluarga','Anggota keluarga yang merokok');
+  if(val('a-keluarga')==='Ya' && !val('a-keluarga-siapa')) kurang.push('Siapa anggota keluarga yang merokok');
+  perlu('a-co','Kadar CO');
+  perlu('a-bb','BB');
+  perlu('a-tb','TB');
+  perlu('a-td','TD');
+  var jenisValAwal=document.getElementById('a-jenis').value||'';
+  if(jenisValAwal.indexOf('elektronik')>=0 || jenisValAwal.indexOf('Keduanya')>=0){ perlu('a-vape-alat','Perangkat rokok elektronik'); perlu('a-vape-nik','Kadar nikotin'); perlu('a-vape-frek','Frekuensi pakai per hari'); }
+  perlu('a-riw-jumlah','Jumlah usaha berhenti');
+  if(val('a-riw-jumlah') && Number(val('a-riw-jumlah'))>0){ perlu('a-riw-terakhir','Kapan usaha terakhir'); perlu('a-riw-hari','Jumlah hari bebas rokok'); perlu('a-riw-cara','Cara berhenti yang digunakan'); perlu('a-riw-masalah','Masalah yang dihadapi saat berhenti dulu'); perlu('a-riw-kembali','Alasan mulai merokok kembali'); }
+  perlu('a-siap','Tingkat kesiapan');
+  perlu('a-alasan-berhenti','Alasan ingin berhenti');
+  var metodeValAwal=document.getElementById('a-metode').value||'';
+  if(metodeValAwal!=='Masih merokok') perlu('a-berhenti','Tanggal berhenti');
+  perlu('a-dukung','Dukungan keluarga');
+  var sampaiOk=document.getElementById('a-sampai-dampak').checked || document.getElementById('a-sampai-manfaat').checked || document.getElementById('a-sampai-tantangan').checked;
+  if(!sampaiOk) kurang.push('Yang disampaikan (minimal satu dicentang)');
+  perlu('a-berikutnya','Pertemuan berikutnya');
+  if(kurang.length){ showMsg('Lengkapi dulu bagian wajib berikut: '+kurang.join(', ')+'.','err'); return false; }
   var jenisA=document.getElementById('a-jenis').value;
   var vapeA='';
   if(jenisA.indexOf('elektronik')>=0 || jenisA.indexOf('Keduanya')>=0){
