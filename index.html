@@ -109,8 +109,8 @@
     <h2 id="pk-judul" style="margin-top:12px">Pemeriksaan / Konseling &amp; FU</h2>
     <div id="pk-info" class="muted"></div>
     <div style="padding:10px 0">
-      <button id="pk-btn-riwayat" class="on" type="button" onclick="pkTab('riwayat')">Riwayat</button>
-      <button id="pk-btn-pertama" type="button" onclick="pkTab('pertama')">Konseling Pertama</button>
+      <button id="btn-tambah-konseling" class="btn" type="button" onclick="bukaKonselingPertama()">+ Konseling</button>
+      <p id="pk-lock-note" class="muted"></p>
     </div>
 
     <div id="pk-riwayat">
@@ -118,7 +118,116 @@
       <div id="pk-riwayat-tabel" style="overflow-x:auto"></div>
     </div>
 
-    <div id="pk-pertama" class="hidden">
+  </section>
+
+  <section id="tab-panduan" class="card hidden">
+    <h2>Panduan Singkat (dari Modul TOT UBM Kemenkes)</h2>
+    <h3>Metode 4T</h3>
+    <ol>
+      <li><b>Tanyakan:</b> tipe klien, profil perokok, tingkat adiksi (Fagerstrom).</li>
+      <li><b>Telaah:</b> motivasi 0&ndash;10 dan tahap perubahan (praperenungan, perenungan, persiapan, aksi, pemeliharaan, kekambuhan).</li>
+      <li><b>Tolong &amp; Nasehati:</b> tanggal berhenti, metode seketika/penundaan/pengurangan, antisipasi gejala putus nikotin, dukungan keluarga.</li>
+      <li><b>Tindak Lanjut:</b> FU 3&ndash;7 hari (telepon/WA), lalu 10 hari&ndash;2 minggu, 1, 3, 6, 12 bulan.</li>
+    </ol>
+    <h3>Belum mau berhenti? Pakai 5Rs (3&ndash;5 menit di poli)</h3>
+    <p>Relevance (dampak untuk diri &amp; keluarga), Risks (dampak negatif), Rewards (manfaat berhenti), Roadblocks (tantangan), Repetition (tanyakan status terus-menerus).</p>
+    <h3>Penilaian &amp; Rujukan</h3>
+    <p>CAR 1&ndash;12 = lama berhenti terus-menerus dalam bulan (CAR 12 = 12 bulan). Yang belum berhenti dicatat Konseling 1&ndash;6; yang sudah berhenti dicatat CAR 1&ndash;12. SUKSES hanya setelah CAR 12 tercatat. Rujuk ke FKRTL (RSUP NTB) bila: gagal setelah 3 bulan/6 pertemuan, dependensi sedang&ndash;berat, komorbid berat, atau withdrawal tak tertangani. Cadangan gratis: Quitline-INA <b>0-800-177-6565</b>.</p>
+    <h3>Yang TIDAK dilakukan di fase awal</h3>
+    <p>Tidak melibatkan kader, tidak konseling di pustu, tidak mengubah aplikasi ERM, tidak ruangan baru. Target utama: pasien dewasa/lansia klaster 3.</p>
+  </section>
+  <div id="modal-detail" class="modal hidden">
+    <div class="card">
+      <button class="btn2" type="button" onclick="tutupModal('modal-detail')">Tutup</button>
+      <h2>Detail Pemeriksaan</h2>
+      <div id="modal-detail-isi"></div>
+    </div>
+  </div>
+  <div id="modal-fu" class="modal hidden">
+    <div class="card">
+      <button class="btn2" type="button" onclick="tutupModal('modal-fu')">Tutup</button>
+      <h2 id="modal-fu-judul">Konseling / Follow Up</h2>
+      <form onsubmit="return simpanFUModal(event)">
+        <div class="row">
+          <div><label>Tanggal</label><input type="date" id="m-tgl" required></div>
+          <div><label>Jenis</label><select id="m-jenis"><option>Konseling 2</option><option>Konseling 3</option><option>Konseling 4</option><option>Konseling 5</option><option>Konseling 6</option><option>CAR 1</option><option>CAR 2</option><option>CAR 3</option><option>CAR 4</option><option>CAR 5</option><option>CAR 6</option><option>CAR 7</option><option>CAR 8</option><option>CAR 9</option><option>CAR 10</option><option>CAR 11</option><option>CAR 12</option><option>FU telepon-WA</option><option>FU tatap muka</option></select></div>
+        </div>
+        <div class="row">
+          <div><label>Status merokok</label><select id="m-status"><option>Sudah berhenti</option><option>Masih merokok</option><option>Berkurang</option><option>Kambuh</option></select></div>
+          <div><label>CO (ppm, bila ada alat)</label><input type="number" id="m-co" step="0.1" placeholder="CO <10 ppm = tidak merokok"></div>
+        </div>
+        <div class="row">
+          <div><label>BB (kg)</label><input type="number" id="m-bb" step="0.1"></div>
+          <div><label>TD (mmHg)</label><input id="m-td" placeholder="Misal: 120/80"></div>
+        </div>
+        <button class="btn2" type="button" id="m-fag-btn" onclick="toggleForm('m-fag-box','m-fag-btn','Form Fagerstrom')">Tampilkan Form Fagerstrom</button>
+        <div id="m-fag-box" class="hidden">
+          <label>Skor Fagerstrom baru (0&ndash;10, opsional)</label>
+          <input type="number" id="m-fag" min="0" max="10">
+        </div>
+        <button class="btn2" type="button" id="m-mot-btn" onclick="toggleForm('m-mot-box','m-mot-btn','Form Skala Motivasi')">Tampilkan Form Skala Motivasi</button>
+        <div id="m-mot-box" class="hidden">
+          <label>Motivasi berhenti baru (pilih 0&ndash;10, opsional)</label>
+          <select id="m-mot"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+          <label>Detail motivasi (opsional)</label>
+          <div class="row">
+            <div><label>Penting (0&ndash;10)</label><select id="m-mot-penting"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+            <div><label>Yakin (0&ndash;10)</label><select id="m-mot-yakin"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+          </div>
+          <label>Siap (0&ndash;10)</label><select id="m-mot-siap"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+          <label>Alasan / pernyataan motivasi klien</label><textarea id="m-mot-alasan"></textarea>
+        </div>
+        <label>Kendala / gejala putus nikotin</label><textarea id="m-kendala"></textarea>
+        <label>Tindak lanjut / rencana</label><textarea id="m-tindak"></textarea>
+        <button class="btn" type="submit">Simpan Konseling / FU</button>
+      </form>
+    </div>
+  </div>
+  <div id="modal-hapus" class="modal hidden">
+    <div class="card">
+      <h2>Hapus Data?</h2>
+      <div id="modal-hapus-isi"></div>
+      <p class="warn">Tindakan ini tidak bisa dibatalkan. Data yang dihapus tidak bisa dikembalikan dari aplikasi.</p>
+      <label>Masukkan password hapus untuk melanjutkan</label>
+      <input type="password" id="hapus-pass" inputmode="numeric" placeholder="Password hapus" autocomplete="off">
+      <button class="btn" type="button" onclick="konfirmasiHapus()">Ya, Hapus</button>
+      <button class="btn2" type="button" onclick="tutupModal('modal-hapus')">Batal</button>
+    </div>
+  </div>
+  <div id="modal-edit" class="modal hidden">
+    <div class="card">
+      <h2>Edit Riwayat Pemeriksaan</h2>
+      <p class="muted">Ubah data riwayat tanggal ini, lalu simpan. Mengubah jenis ke/dari Konseling 1 atau CAR 12 akan memengaruhi kunci Konseling Pertama dan syarat SUKSES secara otomatis saat halaman dimuat ulang.</p>
+      <form onsubmit="return simpanEditRiwayat(event)">
+        <div class="row">
+          <div><label>Tanggal</label><input type="date" id="e-tgl" required></div>
+          <div><label>Jenis</label><select id="e-jenis"><option>Konseling 1</option><option>Konseling 2</option><option>Konseling 3</option><option>Konseling 4</option><option>Konseling 5</option><option>Konseling 6</option><option>CAR 1</option><option>CAR 2</option><option>CAR 3</option><option>CAR 4</option><option>CAR 5</option><option>CAR 6</option><option>CAR 7</option><option>CAR 8</option><option>CAR 9</option><option>CAR 10</option><option>CAR 11</option><option>CAR 12</option><option>FU telepon-WA</option><option>FU tatap muka</option></select></div>
+        </div>
+        <label>Status merokok</label><input id="e-status">
+        <div class="row">
+          <div><label>CO (ppm)</label><input type="number" id="e-co" step="any"></div>
+          <div><label>BB (kg)</label><input type="number" id="e-bb" step="any"></div>
+        </div>
+        <label>TD</label><input id="e-td" placeholder="Misal: 120/80">
+        <label>Kendala / profil</label><textarea id="e-kendala"></textarea>
+        <label>Tindak lanjut</label><textarea id="e-tindak"></textarea>
+        <button class="btn" type="submit">Simpan Perubahan</button>
+        <button class="btn2" type="button" onclick="tutupModal('modal-edit')">Batal</button>
+      </form>
+    </div>
+  </div>
+  <div id="modal-klien" class="modal hidden">
+    <div class="card">
+      <h2>Detail Klien</h2>
+      <button class="btn2" type="button" onclick="tutupModal('modal-klien')">Tutup</button>
+      <div id="modal-klien-isi"></div>
+      <button class="btn2" type="button" onclick="tutupModal('modal-klien')">Tutup</button>
+    </div>
+  </div>
+  <div id="modal-konseling" class="modal hidden">
+    <div class="card">
+      <h2>Form Pemeriksaan Lengkap</h2>
+      <button class="btn2" type="button" onclick="tutupModal('modal-konseling')">Tutup</button>
     <div id="pk-lock" class="warn hidden"></div>
     <h3>A. Konseling Awal &mdash; Metode 4T (Pertemuan 1)</h3>
     <form onsubmit="return simpanAwal(event)">
@@ -246,112 +355,7 @@
       <label>Dukungan keluarga / lingkungan bebas asap rokok</label><input id="a-dukung" placeholder="Siapa yang mendukung di rumah?">
       <button class="btn" type="submit">Simpan Konseling Awal (Konseling 1)</button>
     </form>
-
-    </div>
-  </section>
-
-  <section id="tab-panduan" class="card hidden">
-    <h2>Panduan Singkat (dari Modul TOT UBM Kemenkes)</h2>
-    <h3>Metode 4T</h3>
-    <ol>
-      <li><b>Tanyakan:</b> tipe klien, profil perokok, tingkat adiksi (Fagerstrom).</li>
-      <li><b>Telaah:</b> motivasi 0&ndash;10 dan tahap perubahan (praperenungan, perenungan, persiapan, aksi, pemeliharaan, kekambuhan).</li>
-      <li><b>Tolong &amp; Nasehati:</b> tanggal berhenti, metode seketika/penundaan/pengurangan, antisipasi gejala putus nikotin, dukungan keluarga.</li>
-      <li><b>Tindak Lanjut:</b> FU 3&ndash;7 hari (telepon/WA), lalu 10 hari&ndash;2 minggu, 1, 3, 6, 12 bulan.</li>
-    </ol>
-    <h3>Belum mau berhenti? Pakai 5Rs (3&ndash;5 menit di poli)</h3>
-    <p>Relevance (dampak untuk diri &amp; keluarga), Risks (dampak negatif), Rewards (manfaat berhenti), Roadblocks (tantangan), Repetition (tanyakan status terus-menerus).</p>
-    <h3>Penilaian &amp; Rujukan</h3>
-    <p>CAR 1&ndash;12 = lama berhenti terus-menerus dalam bulan (CAR 12 = 12 bulan). Yang belum berhenti dicatat Konseling 1&ndash;6; yang sudah berhenti dicatat CAR 1&ndash;12. SUKSES hanya setelah CAR 12 tercatat. Rujuk ke FKRTL (RSUP NTB) bila: gagal setelah 3 bulan/6 pertemuan, dependensi sedang&ndash;berat, komorbid berat, atau withdrawal tak tertangani. Cadangan gratis: Quitline-INA <b>0-800-177-6565</b>.</p>
-    <h3>Yang TIDAK dilakukan di fase awal</h3>
-    <p>Tidak melibatkan kader, tidak konseling di pustu, tidak mengubah aplikasi ERM, tidak ruangan baru. Target utama: pasien dewasa/lansia klaster 3.</p>
-  </section>
-  <div id="modal-detail" class="modal hidden">
-    <div class="card">
-      <button class="btn2" type="button" onclick="tutupModal('modal-detail')">Tutup</button>
-      <h2>Detail Pemeriksaan</h2>
-      <div id="modal-detail-isi"></div>
-    </div>
-  </div>
-  <div id="modal-fu" class="modal hidden">
-    <div class="card">
-      <button class="btn2" type="button" onclick="tutupModal('modal-fu')">Tutup</button>
-      <h2 id="modal-fu-judul">Konseling / Follow Up</h2>
-      <form onsubmit="return simpanFUModal(event)">
-        <div class="row">
-          <div><label>Tanggal</label><input type="date" id="m-tgl" required></div>
-          <div><label>Jenis</label><select id="m-jenis"><option>Konseling 2</option><option>Konseling 3</option><option>Konseling 4</option><option>Konseling 5</option><option>Konseling 6</option><option>CAR 1</option><option>CAR 2</option><option>CAR 3</option><option>CAR 4</option><option>CAR 5</option><option>CAR 6</option><option>CAR 7</option><option>CAR 8</option><option>CAR 9</option><option>CAR 10</option><option>CAR 11</option><option>CAR 12</option><option>FU telepon-WA</option><option>FU tatap muka</option></select></div>
-        </div>
-        <div class="row">
-          <div><label>Status merokok</label><select id="m-status"><option>Sudah berhenti</option><option>Masih merokok</option><option>Berkurang</option><option>Kambuh</option></select></div>
-          <div><label>CO (ppm, bila ada alat)</label><input type="number" id="m-co" step="0.1" placeholder="CO <10 ppm = tidak merokok"></div>
-        </div>
-        <div class="row">
-          <div><label>BB (kg)</label><input type="number" id="m-bb" step="0.1"></div>
-          <div><label>TD (mmHg)</label><input id="m-td" placeholder="Misal: 120/80"></div>
-        </div>
-        <button class="btn2" type="button" id="m-fag-btn" onclick="toggleForm('m-fag-box','m-fag-btn','Form Fagerstrom')">Tampilkan Form Fagerstrom</button>
-        <div id="m-fag-box" class="hidden">
-          <label>Skor Fagerstrom baru (0&ndash;10, opsional)</label>
-          <input type="number" id="m-fag" min="0" max="10">
-        </div>
-        <button class="btn2" type="button" id="m-mot-btn" onclick="toggleForm('m-mot-box','m-mot-btn','Form Skala Motivasi')">Tampilkan Form Skala Motivasi</button>
-        <div id="m-mot-box" class="hidden">
-          <label>Motivasi berhenti baru (pilih 0&ndash;10, opsional)</label>
-          <select id="m-mot"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
-          <label>Detail motivasi (opsional)</label>
-          <div class="row">
-            <div><label>Penting (0&ndash;10)</label><select id="m-mot-penting"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
-            <div><label>Yakin (0&ndash;10)</label><select id="m-mot-yakin"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
-          </div>
-          <label>Siap (0&ndash;10)</label><select id="m-mot-siap"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
-          <label>Alasan / pernyataan motivasi klien</label><textarea id="m-mot-alasan"></textarea>
-        </div>
-        <label>Kendala / gejala putus nikotin</label><textarea id="m-kendala"></textarea>
-        <label>Tindak lanjut / rencana</label><textarea id="m-tindak"></textarea>
-        <button class="btn" type="submit">Simpan Konseling / FU</button>
-      </form>
-    </div>
-  </div>
-  <div id="modal-hapus" class="modal hidden">
-    <div class="card">
-      <h2>Hapus Data?</h2>
-      <div id="modal-hapus-isi"></div>
-      <p class="warn">Tindakan ini tidak bisa dibatalkan. Data yang dihapus tidak bisa dikembalikan dari aplikasi.</p>
-      <label>Masukkan password hapus untuk melanjutkan</label>
-      <input type="password" id="hapus-pass" inputmode="numeric" placeholder="Password hapus" autocomplete="off">
-      <button class="btn" type="button" onclick="konfirmasiHapus()">Ya, Hapus</button>
-      <button class="btn2" type="button" onclick="tutupModal('modal-hapus')">Batal</button>
-    </div>
-  </div>
-  <div id="modal-edit" class="modal hidden">
-    <div class="card">
-      <h2>Edit Riwayat Pemeriksaan</h2>
-      <p class="muted">Ubah data riwayat tanggal ini, lalu simpan. Mengubah jenis ke/dari Konseling 1 atau CAR 12 akan memengaruhi kunci Konseling Pertama dan syarat SUKSES secara otomatis saat halaman dimuat ulang.</p>
-      <form onsubmit="return simpanEditRiwayat(event)">
-        <div class="row">
-          <div><label>Tanggal</label><input type="date" id="e-tgl" required></div>
-          <div><label>Jenis</label><select id="e-jenis"><option>Konseling 1</option><option>Konseling 2</option><option>Konseling 3</option><option>Konseling 4</option><option>Konseling 5</option><option>Konseling 6</option><option>CAR 1</option><option>CAR 2</option><option>CAR 3</option><option>CAR 4</option><option>CAR 5</option><option>CAR 6</option><option>CAR 7</option><option>CAR 8</option><option>CAR 9</option><option>CAR 10</option><option>CAR 11</option><option>CAR 12</option><option>FU telepon-WA</option><option>FU tatap muka</option></select></div>
-        </div>
-        <label>Status merokok</label><input id="e-status">
-        <div class="row">
-          <div><label>CO (ppm)</label><input type="number" id="e-co" step="any"></div>
-          <div><label>BB (kg)</label><input type="number" id="e-bb" step="any"></div>
-        </div>
-        <label>TD</label><input id="e-td" placeholder="Misal: 120/80">
-        <label>Kendala / profil</label><textarea id="e-kendala"></textarea>
-        <label>Tindak lanjut</label><textarea id="e-tindak"></textarea>
-        <button class="btn" type="submit">Simpan Perubahan</button>
-        <button class="btn2" type="button" onclick="tutupModal('modal-edit')">Batal</button>
-      </form>
-    </div>
-  </div>
-  <div id="modal-klien" class="modal hidden">
-    <div class="card">
-      <h2>Detail Klien</h2>
-      <button class="btn2" type="button" onclick="tutupModal('modal-klien')">Tutup</button>
-      <div id="modal-klien-isi"></div>
-      <button class="btn2" type="button" onclick="tutupModal('modal-klien')">Tutup</button>
+      <button class="btn2" type="button" onclick="tutupModal('modal-konseling')">Tutup</button>
     </div>
   </div>
 </main>
@@ -448,7 +452,7 @@ function bukaPemeriksaan(nik){
   document.getElementById('page-konseling').classList.remove('hidden');
   document.getElementById('pk-judul').textContent='Pemeriksaan: '+k.values[3];
   document.getElementById('pk-info').textContent='NIK: '+maskNik(k.values[2])+' | Status: '+(k.values[16]||'Aktif')+' | Tanggal berhenti: '+(k.values[15]||'-');
-  pkTab('riwayat'); window.scrollTo(0,0);
+  renderRiwayat(); renderJadwalKlien(); window.scrollTo(0,0);
 }
 function kembaliKeDaftar(){
   document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')});
@@ -456,30 +460,27 @@ function kembaliKeDaftar(){
   document.querySelector('#main-nav button[data-tab="klien"]').classList.add('on');
   document.getElementById('tab-klien').classList.remove('hidden'); renderKlien();
 }
-function pkTab(tab){
-  document.getElementById('pk-btn-riwayat').classList.toggle('on', tab==='riwayat');
-  document.getElementById('pk-btn-pertama').classList.toggle('on', tab==='pertama');
-  document.getElementById('pk-riwayat').classList.toggle('hidden', tab!=='riwayat');
-  document.getElementById('pk-pertama').classList.toggle('hidden', tab!=='pertama');
-  if(tab==='riwayat'){ renderRiwayat(); renderJadwalKlien(); }
-  if(tab==='pertama') terapkanKunciPertama();
-}
 function hasKonseling1(nik){ return DATA.konseling.some(function(r){return String(r.values[0])===String(nik) && String(r.values[3])==='Konseling 1'}); }
-function pertamaTerkunci(){ if(!klienTerpilih) return false; return hasKonseling1(klienTerpilih.values[2]) && (klienTerpilih.values[16]||'Aktif')!=='DO'; }
+function pertamaTerkunci(){ if(!klienTerpilih) return false; return DATA.konseling.some(function(r){return String(r.values[0])===String(klienTerpilih.values[2])}); }
 function terapkanKunciPertama(){
-  var lock=document.getElementById('pk-lock'); if(!lock) return;
+  var btn=document.getElementById('btn-tambah-konseling'); if(!btn||!klienTerpilih) return;
+  var lock=document.getElementById('pk-lock'); var note=document.getElementById('pk-lock-note');
   if(pertamaTerkunci()){
-    var t=DATA.konseling.filter(function(r){return String(r.values[0])===String(klienTerpilih.values[2]) && String(r.values[3])==='Konseling 1'}).pop();
-    lock.classList.remove('hidden');
-    lock.innerHTML='<b>Konseling Pertama terkunci.</b> Konseling Pertama sudah tercatat pada '+(t?t.values[2]:'-')+'. Isiannya tidak bisa diubah lagi. Tab ini bisa diisi lagi bila catatan Konseling 1 itu dihapus dari Sheet, atau bila status klien sebelumnya DO dan ini pemeriksaan baru (episode baru) untuk pasien yang sama.';
-    document.querySelectorAll('#pk-pertama input, #pk-pertama select, #pk-pertama textarea').forEach(function(el){el.disabled=true});
-    var sb=document.querySelector('#pk-pertama button[type=submit]'); if(sb) sb.disabled=true;
+    var t=DATA.konseling.filter(function(r){return String(r.values[0])===String(klienTerpilih.values[2])}).pop();
+    btn.disabled=true;
+    if(note) note.textContent='Konseling Pertama sudah dilakukan'+(t?' pada '+t.values[2]:'')+'. Tombol +Konseling nonaktif. Gunakan Follow Up pada kartu riwayat untuk konseling lanjutan.';
+    if(lock){ lock.classList.remove('hidden'); lock.innerHTML='<b>Konseling Pertama nonaktif.</b> Sudah ada riwayat untuk klien ini, jadi Konseling Pertama tidak bisa diisi lagi.'; }
   } else {
-    lock.classList.add('hidden');
-    document.querySelectorAll('#pk-pertama input, #pk-pertama select, #pk-pertama textarea').forEach(function(el){el.disabled=false});
-    var sb2=document.querySelector('#pk-pertama button[type=submit]'); if(sb2) sb2.disabled=false;
+    btn.disabled=false;
+    if(note) note.textContent='';
+    if(lock) lock.classList.add('hidden');
   }
 }
+function bukaKonselingPertama(){
+  if(pertamaTerkunci()){ showMsg('Konseling Pertama nonaktif karena sudah ada riwayat untuk klien ini. Gunakan Follow Up pada kartu riwayat untuk konseling lanjutan.','err'); terapkanKunciPertama(); return; }
+  document.getElementById('modal-konseling').classList.remove('hidden');
+}
+
 function hitungFag(){
   var total=0, lengkap=true;
   for(var i=1;i<=6;i++){ var c=document.querySelector('input[name="fag'+i+'"]:checked'); if(!c){lengkap=false} else total+=Number(c.value); }
@@ -577,7 +578,7 @@ function renderRiwayat(){
   var k=klienTerpilih; var nik=k.values[2];
   var riw=DATA.konseling.filter(function(r){return String(r.values[0])===String(nik)});
   if(document.getElementById('pk-ringkas')) document.getElementById('pk-ringkas').innerHTML='<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16]||'Aktif')+'</b></p><p>'+progresKlien(k)+'</p>';
-  renderStatusOptions();
+  renderStatusOptions(); terapkanKunciPertama();
   document.getElementById('pk-riwayat-tabel').innerHTML=riw.length? riw.map(function(r){
     var fu=cariFU(nik, r.values[2]);
     var fuTgl=fu?fu.values[0]:'-';
@@ -591,7 +592,7 @@ function simpanKlien(e){ e.preventDefault();
   run('saveKlien',o,function(){showMsg('Klien tersimpan. Buka klien itu dari Daftar Klien lalu tekan Pemeriksaan untuk konseling awal.','ok'); muat()}); return false }
 function vapeInfo(prefix){ var jenis=document.getElementById(prefix+'-jenis').value||''; if(jenis.indexOf('elektronik')<0 && jenis.indexOf('Keduanya')<0) return ''; return 'Perangkat: '+(document.getElementById(prefix+'-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById(prefix+'-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById(prefix+'-vape-frek').value||'-')+'; Pernyataan: '+(document.getElementById(prefix+'-vape-nyata').value||'-'); }
 function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return false}
-  if(pertamaTerkunci()){showMsg('Konseling Pertama terkunci karena sudah tercatat. Buka tab Riwayat untuk melihat keterangannya.','err'); return false}
+  if(pertamaTerkunci()){showMsg('Konseling Pertama nonaktif karena sudah ada riwayat untuk klien ini. Gunakan Follow Up pada kartu riwayat untuk konseling lanjutan.','err'); return false}
   var fagTotal=hitungFag(); var lengkap=true; for(var i=1;i<=6;i++){ if(!document.querySelector('input[name="fag'+i+'"]:checked')) lengkap=false; }
   if(!lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false}
   var jenisA=document.getElementById('a-jenis').value;
@@ -602,7 +603,7 @@ function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka kli
     vapeA='Penn State ECDI skor '+ps.total+'/20 ('+psLabel(ps.total)+') ['+psJawaban()+']. Perangkat: '+(document.getElementById('a-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById('a-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById('a-vape-frek').value||'-')+'; Catatan: '+(document.getElementById('a-vape-nyata').value||'-');
   }
   var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('a-tgl').value, batangPerHari:document.getElementById('a-batang').value, usiaMulai:document.getElementById('a-usia').value, jenisRokok:jenisA, vapeInfo:vapeA, skorFagerstrom:fagTotal, motivasi:(document.querySelector('input[name="a-mot-pilih"]:checked')?document.querySelector('input[name="a-mot-pilih"]:checked').value:'5'), motAlasan:'Detail motivasi: Penting '+document.getElementById('a-mot-penting').value+'/10, Yakin '+document.getElementById('a-mot-yakin').value+'/10, Siap '+document.getElementById('a-mot-siap').value+'/10.'+(document.getElementById('a-mot-alasan').value?' Alasan: '+document.getElementById('a-mot-alasan').value:''), tahap:document.getElementById('a-tahap').value, tanggalBerhenti:document.getElementById('a-berhenti').value, metode:document.getElementById('a-metode').value, dukungan:document.getElementById('a-dukung').value};
-  run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui. Bila ini pemeriksaan baru setelah status DO, status klien perlu dikembalikan ke Aktif agar Konseling Pertama terkunci lagi.','ok'); muat()}); return false }
+  run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui.','ok'); tutupModal('modal-konseling'); muat()}); return false }
 function ubahStatus(){ if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return}
   run('updateKlienStatus',{nik:klienTerpilih.values[2], status:document.getElementById('s-status').value},function(){showMsg('Status klien diperbarui.','ok'); muat()}) }
 function renderJadwalKlien(){
