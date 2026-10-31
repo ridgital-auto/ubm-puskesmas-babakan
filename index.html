@@ -321,6 +321,8 @@
       <h2>Hapus Data?</h2>
       <div id="modal-hapus-isi"></div>
       <p class="warn">Tindakan ini tidak bisa dibatalkan. Data yang dihapus tidak bisa dikembalikan dari aplikasi.</p>
+      <label>Masukkan password hapus untuk melanjutkan</label>
+      <input type="password" id="hapus-pass" inputmode="numeric" placeholder="Password hapus" autocomplete="off">
       <button class="btn" type="button" onclick="konfirmasiHapus()">Ya, Hapus</button>
       <button class="btn2" type="button" onclick="tutupModal('modal-hapus')">Batal</button>
     </div>
@@ -507,12 +509,14 @@ function mintaHapusRiwayat(row){
   var r=DATA.konseling.find(function(x){return x.row===row}); if(!r) return;
   hapusPending={type:'konseling', row:row};
   document.getElementById('modal-hapus-isi').innerHTML='<p>Hapus riwayat pemeriksaan ini?</p><p><b>'+esc(r.values[2])+' &mdash; '+esc(r.values[3])+'</b> untuk '+esc(klienTerpilih?klienTerpilih.values[3]:'')+'.</p><p class="muted">Hanya baris riwayat tanggal tersebut yang dihapus. Data klien tidak dihapus.</p>';
+  document.getElementById('hapus-pass').value='';
   document.getElementById('modal-hapus').classList.remove('hidden');
 }
 function mintaHapusKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)}); if(!k) return;
   hapusPending={type:'klien', nik:nik};
   document.getElementById('modal-hapus-isi').innerHTML='<p>Hapus klien ini beserta seluruh riwayat dan jadwalnya?</p><p><b>'+esc(k.values[3])+'</b> (NIK '+maskNik(k.values[2])+').</p><p class="muted">Ini menghapus data klien, semua riwayat konseling/FU, dan semua jadwal untuk klien tersebut.</p>';
+  document.getElementById('hapus-pass').value='';
   document.getElementById('modal-hapus').classList.remove('hidden');
 }
 var editRow=null;
@@ -534,6 +538,7 @@ function simpanEditRiwayat(e){ e.preventDefault(); if(!editRow) return false;
   run('updateKonselingRow',o,function(){showMsg('Riwayat berhasil diubah.','ok'); tutupModal('modal-edit'); editRow=null; muat()}); return false }
 function konfirmasiHapus(){
   if(!hapusPending) return;
+  if(document.getElementById('hapus-pass').value!=='112'){showMsg('Password hapus salah. Data tidak dihapus.','err'); return}
   if(hapusPending.type==='konseling'){
     run('deleteKonselingRow',{row:hapusPending.row},function(){showMsg('Riwayat tanggal tersebut sudah dihapus.','ok'); tutupModal('modal-hapus'); hapusPending=null; muat()});
   } else {
