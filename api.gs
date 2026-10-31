@@ -33,6 +33,7 @@ function doGet(e) {
     else if (action === 'deleteKonselingRow') result = deleteKonselingRow(payload);
     else if (action === 'deleteKlien') result = deleteKlien(payload);
     else if (action === 'updateKonselingRow') result = updateKonselingRow(payload);
+    else if (action === 'saveKonselorBaru') result = saveKonselorBaru(payload);
     else throw new Error('Aksi tidak dikenal: ' + action);
     lock.releaseLock();
     return jsonOut_({ ok: true, data: result });
@@ -62,6 +63,8 @@ var SHEET_ID = '16h7TiyO2quO1xR7IHcHNh0fe0Gy_mrc2djFZhgThKDo';
 var TAB_KLIEN = 'Klien';
 var TAB_KONSELING = 'Konseling & FU';
 var TAB_JADWAL = 'Jadwal Perjanjian';
+var TAB_KONSELOR = 'Konselor';
+var KONSELOR_AWAL = ['dr. Abdi Azhim Zauli Azra', 'Hj. Nurainun, S.Kep, Ners', 'Imanda Lestari, SKM'];
 
 
 function ss_() {
@@ -92,12 +95,40 @@ function readTab_(name) {
   return out;
 }
 
+function pastikanTabKonselor_() {
+  var ss = ss_();
+  var sheet = ss.getSheetByName(TAB_KONSELOR);
+  if (!sheet) {
+    sheet = ss.insertSheet(TAB_KONSELOR);
+    sheet.appendRow(['Nama']);
+    KONSELOR_AWAL.forEach(function (n) { sheet.appendRow([n]); });
+  }
+  return sheet;
+}
+
 function getData() {
+  pastikanTabKonselor_();
   return {
     klien: readTab_(TAB_KLIEN),
     konseling: readTab_(TAB_KONSELING),
-    jadwal: readTab_(TAB_JADWAL)
+    jadwal: readTab_(TAB_JADWAL),
+    konselor: readTab_(TAB_KONSELOR)
   };
+}
+
+function saveKonselorBaru(o) {
+  var nama = String(o.nama || '').trim();
+  if (!nama) throw new Error('Nama konselor tidak boleh kosong.');
+  var sheet = pastikanTabKonselor_();
+  var last = sheet.getLastRow();
+  if (last >= 2) {
+    var vals = sheet.getRange(2, 1, last - 1, 1).getValues();
+    for (var i = 0; i < vals.length; i++) {
+      if (String(vals[i][0]).trim().toLowerCase() === nama.toLowerCase()) return { ok: true, sudahAda: true };
+    }
+  }
+  sheet.appendRow([nama]);
+  return { ok: true };
 }
 
 function fagerstromLabel_(skor) {
@@ -180,7 +211,8 @@ function saveKonselingAwal(o) {
     (o.motAlasan ? ' Alasan motivasi: ' + o.motAlasan : '');
   var tindak = 'Tanggal berhenti: ' + (o.tanggalBerhenti || '(belum ditentukan)') +
     '. Metode: ' + (o.metode || '-') + '. Dukungan keluarga: ' + (o.dukungan || '-') +
-    '. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.';
+    '. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.' +
+    (o.konselor ? ' Konselor: ' + o.konselor + '.' : '');
   var ks = ss_().getSheetByName(TAB_KONSELING);
   ks.appendRow([o.nik, o.nama || '', o.tanggal || '', 'Konseling 1', 'Masih merokok', '', '', '', ringkas, tindak]);
   return { ok: true };
@@ -204,6 +236,7 @@ function saveKonseling(o) {
   if (o.motAlasan) penilaian.push('Alasan motivasi: ' + o.motAlasan);
   if (o.jenisRokok) penilaian.push('Jenis rokok: ' + o.jenisRokok);
   if (o.vapeInfo) penilaian.push('Rokok elektronik: ' + o.vapeInfo);
+  if (o.konselor) penilaian.push('Konselor: ' + o.konselor);
   if (penilaian.length) tindak = (tindak ? tindak + ' | ' : '') + 'Penilaian: ' + penilaian.join('; ');
   var ks = ss_().getSheetByName(TAB_KONSELING);
   ks.appendRow([
