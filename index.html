@@ -45,6 +45,8 @@
   .menu-filter button:hover{background:#fff1f2}
   .tombol-ikon-kecil{width:28px;height:28px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;font-weight:bold;flex-shrink:0}
   .tombol-ikon-kecil:disabled{opacity:.45;cursor:not-allowed}
+  .tombol-halaman{min-width:28px;height:28px;padding:0 6px;border-radius:14px;background:#fff;color:#e11d48;border:2px solid #e11d48;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0}
+  .tombol-halaman.aktif{background:#e11d48;color:#fff;font-weight:bold}
   .modal .card{max-width:680px;width:100%;max-height:92vh;overflow:auto}
   .modal.hidden{display:none}
   .prev-card{border:1px solid #fecdd3;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
@@ -652,6 +654,19 @@ function toggleCari(){ var inp=document.getElementById('cari'); if(inp.classList
 function toggleMenuFilter(){ document.getElementById('menu-filter').classList.toggle('hidden'); }
 function pilihFilterStatus(v){ document.getElementById('filter-status').value=v; document.getElementById('menu-filter').classList.add('hidden'); var tb=document.getElementById('tombol-filter'); if(tb) tb.classList.toggle('aktif', !!v); filterKlien(); }
 function gantiHalamanKlien(d){ halamanKlien+=d; renderKlien(); }
+function lompatHalamanKlien(n){ halamanKlien=n; renderKlien(); }
+function tombolHalamanKlien(totalHal){
+  function btn(n){ return '<button class="tombol-halaman'+(n===halamanKlien?' aktif':'')+'" type="button" onclick="lompatHalamanKlien('+n+')" title="Halaman '+n+'" aria-label="Halaman '+n+'">'+n+'</button>'; }
+  var out='';
+  if(totalHal<=7){ for(var i=1;i<=totalHal;i++) out+=btn(i)+' '; return out; }
+  var mulai=Math.max(2,halamanKlien-1), akhir=Math.min(totalHal-1,halamanKlien+1);
+  out+=btn(1)+' ';
+  if(mulai>2) out+='<span>...</span> ';
+  for(var j=mulai;j<=akhir;j++) out+=btn(j)+' ';
+  if(akhir<totalHal-1) out+='<span>...</span> ';
+  out+=btn(totalHal)+' ';
+  return out;
+}
 function renderKlien(){
   var q=(document.getElementById('cari').value||'').toLowerCase();
   var f=document.getElementById('filter-status').value;
@@ -659,7 +674,7 @@ function renderKlien(){
   var totalHal=Math.max(1,Math.ceil(rows.length/5)); if(halamanKlien>totalHal) halamanKlien=totalHal; if(halamanKlien<1) halamanKlien=1; var mulai=(halamanKlien-1)*5; var tampil=rows.slice(mulai,mulai+5);
   document.getElementById('daftar-klien').innerHTML=rows.length? tampil.map(function(r){
     var nik=r.values[2]; var riw=DATA.konseling.filter(function(x){return String(x.values[0])===String(nik)}); var terakhir=riw.length?riw.slice().sort(function(a,b){ if(String(a.values[2])!==String(b.values[2])) return String(a.values[2])<String(b.values[2])?-1:1; return a.row-b.row; }).pop():null; var fuTerakhir=terakhir?infoFollowUp(nik,terakhir):null; var jad=DATA.jadwal.filter(function(x){return String(x.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}); var jadDekat=jad.length?jad[0].values[0]:'-';
-    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>Jenis kelamin: '+esc(r.values[5]||'-')+' &middot; Umur: '+(umurDariLahir(r.values[4])==='' ? '-' : umurDariLahir(r.values[4])+' tahun')+' &middot; Status: '+esc(r.values[16]||'Aktif')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p>'+(terakhir?'<p><b>Terakhir:</b> '+esc(terakhir.values[3])+' ('+formatTglID(terakhir.values[2])+') &middot; Status: '+esc(terakhir.values[4]||'-')+' &middot; Follow up: '+esc(fuTerakhir.status)+(fuTerakhir.tgl!=='-'?' (Jadwal: '+esc(fuTerakhir.tgl)+')':'')+'</p>':'<p><b>Terakhir:</b> Belum ada riwayat konseling/FU.</p>')+'<p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p><p style="text-align:center;margin-top:12px"><button class="tombol-ikon-kecil" type="button" '+(halamanKlien<=1?'disabled':'')+' onclick="gantiHalamanKlien(-1)" title="Sebelumnya" aria-label="Sebelumnya">&lt;</button> <span>'+halamanKlien+'/'+totalHal+'</span> <button class="tombol-ikon-kecil" type="button" '+(halamanKlien>=totalHal?'disabled':'')+' onclick="gantiHalamanKlien(1)" title="Selanjutnya" aria-label="Selanjutnya">&gt;</button></p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>Jenis kelamin: '+esc(r.values[5]||'-')+' &middot; Umur: '+(umurDariLahir(r.values[4])==='' ? '-' : umurDariLahir(r.values[4])+' tahun')+' &middot; Status: '+esc(r.values[16]||'Aktif')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p>'+(terakhir?'<p><b>Terakhir:</b> '+esc(terakhir.values[3])+' ('+formatTglID(terakhir.values[2])+') &middot; Status: '+esc(terakhir.values[4]||'-')+' &middot; Follow up: '+esc(fuTerakhir.status)+(fuTerakhir.tgl!=='-'?' (Jadwal: '+esc(fuTerakhir.tgl)+')':'')+'</p>':'<p><b>Terakhir:</b> Belum ada riwayat konseling/FU.</p>')+'<p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p><p style="text-align:center;margin-top:12px"><button class="tombol-ikon-kecil" type="button" '+(halamanKlien<=1?'disabled':'')+' onclick="gantiHalamanKlien(-1)" title="Sebelumnya" aria-label="Sebelumnya">&lt;</button> <span>'+halamanKlien+'/'+totalHal+'</span> '+tombolHalamanKlien(totalHal)+' <button class="tombol-ikon-kecil" type="button" '+(halamanKlien>=totalHal?'disabled':'')+' onclick="gantiHalamanKlien(1)" title="Selanjutnya" aria-label="Selanjutnya">&gt;</button></p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
 }
 function detailKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
