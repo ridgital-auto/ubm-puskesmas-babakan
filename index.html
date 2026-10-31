@@ -49,25 +49,16 @@
   <p>Layanan konseling berhenti merokok &mdash; Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, dengan perjanjian. Data tersimpan di Sheet e-RM UBM lewat API Apps Script.</p>
 </header>
 <nav id="main-nav">
-  <button class="on" data-tab="export">Export</button>
-  <button data-tab="beranda">Beranda</button>
-  <button data-tab="baru">Pendaftaran</button>
+  <button class="on" data-tab="beranda">Beranda</button>
   <button data-tab="klien">Daftar Klien</button>
-  <button data-tab="panduan">Help</button>
 </nav>
 <main>
   <div id="msg"></div>
 
-  <section id="tab-export" class="card">
-    <h2>Export</h2>
-    <p>Unduh rekap layanan UBM dalam bentuk dokumen Word (.docx). Tabelnya mengikuti format lampiran: satu baris per klien, kolom Identitas Peserta Puskesmas dan Form UBM.</p>
-    <p class="warn">Dokumen ini berisi NIK lengkap klien dan hanya untuk Tim UBM. Simpan dengan aman, jangan dibagikan ke luar tim.</p>
-    <button class="btn" type="button" onclick="unduhExportDocx()">Unduh Rekap DOCX (semua klien)</button>
-    <p id="export-status" class="muted"></p>
-    <div id="export-preview"></div>
-  </section>
-  <section id="tab-beranda" class="card hidden">
+  
+  <section id="tab-beranda" class="card">
     <h2>Beranda</h2>
+    <p><button class="btn" type="button" onclick="bukaExport()">Export</button> <button class="btn2" type="button" onclick="bukaHelp()">?</button> <span class="muted">Export: unduh rekap layanan UBM dalam format DOCX. Tanda tanya: panduan metode 4T dan 5Rs.</span></p>
     <p class="muted">Angka di bawah dihitung dari tab Klien, Konseling &amp; FU, dan Jadwal Perjanjian di Sheet e-RM UBM.</p>
     <div class="grid" id="stats"></div>
     <h3>Jadwal terdekat</h3>
@@ -78,6 +69,7 @@
 
   <section id="tab-klien" class="card hidden">
     <h2>Daftar Klien</h2>
+    <p><button class="btn" type="button" onclick="bukaPendaftaranBaru()">+ Klien</button></p>
     <label>Cari nama / NIK</label>
     <input id="cari" placeholder="Ketik nama atau NIK..." oninput="renderKlien()">
     <label>Filter status</label>
@@ -88,32 +80,7 @@
     <div id="detail-klien"></div>
   </section>
 
-  <section id="tab-baru" class="card hidden">
-    <h2>Pendaftaran</h2>
-    <p class="muted">Isi sesuai KTP. NIK wajib 16 digit. Setelah tersimpan, buka klien itu dari Daftar Klien lalu tekan Pemeriksaan, kemudian tab Konseling Pertama.</p>
-    <form onsubmit="return simpanKlien(event)">
-      <div class="row">
-        <div><label>Tanggal daftar</label><input type="date" id="b-tgl" required></div>
-        <div><label>NIK (16 digit)</label><input id="b-nik" inputmode="numeric" maxlength="16" required placeholder="16 digit angka"></div>
-      </div>
-      <label>Nama lengkap</label><input id="b-nama" required>
-      <div class="row">
-        <div><label>Tanggal lahir</label><input type="date" id="b-lahir" required></div>
-        <div><label>L/P</label><select id="b-lp" required><option value="">Pilih</option><option>LAKI-LAKI</option><option>PEREMPUAN</option></select></div>
-      </div>
-      <label>Alamat</label><textarea id="b-alamat" required></textarea>
-      <div class="row">
-        <div><label>No HP aktif</label><input id="b-hp" required placeholder="Untuk FU telepon/WA"></div>
-        <div><label>Gol darah</label><select id="b-gol"><option value="">Tidak tahu</option><option>A</option><option>B</option><option>O</option><option>AB</option></select></div>
-      </div>
-      <div class="row">
-        <div><label>Pendidikan</label><select id="b-didik"><option value="">Pilih</option><option>TIDAK SEKOLAH</option><option>SD-SLTP</option><option>SLTA</option><option>DIPLOMA</option><option>SARJANA</option><option>PASCASARJANA</option></select></div>
-        <div><label>Status kawin</label><select id="b-kawin"><option value="">Pilih</option><option>BELUM</option><option>MENIKAH</option><option>JANDA-DUDA</option></select></div>
-      </div>
-      <label>Pekerjaan</label><input id="b-kerja">
-      <button class="btn" type="submit">Simpan Klien</button>
-    </form>
-  </section>
+  
 
   <section id="page-konseling" class="card hidden">
     <button class="btn2" type="button" onclick="kembaliKeDaftar()">&larr; Kembali ke Daftar Klien</button>
@@ -131,22 +98,7 @@
 
   </section>
 
-  <section id="tab-panduan" class="card hidden">
-    <h2>Help (dari Modul TOT UBM Kemenkes)</h2>
-    <h3>Metode 4T</h3>
-    <ol>
-      <li><b>Tanyakan:</b> tipe klien, profil perokok, tingkat adiksi (Fagerstrom).</li>
-      <li><b>Telaah:</b> motivasi 0&ndash;10 dan tahap perubahan (praperenungan, perenungan, persiapan, aksi, pemeliharaan, kekambuhan).</li>
-      <li><b>Tolong &amp; Nasehati:</b> tanggal berhenti, metode seketika/penundaan/pengurangan, antisipasi gejala putus nikotin, dukungan keluarga.</li>
-      <li><b>Tindak Lanjut:</b> FU 3&ndash;7 hari (telepon/WA), lalu 10 hari&ndash;2 minggu, 1, 3, 6, 12 bulan.</li>
-    </ol>
-    <h3>Belum mau berhenti? Pakai 5Rs (3&ndash;5 menit di poli)</h3>
-    <p>Relevance (dampak untuk diri &amp; keluarga), Risks (dampak negatif), Rewards (manfaat berhenti), Roadblocks (tantangan), Repetition (tanyakan status terus-menerus).</p>
-    <h3>Penilaian &amp; Rujukan</h3>
-    <p>CAR 1&ndash;12 = lama berhenti terus-menerus dalam bulan (CAR 12 = 12 bulan). Yang belum berhenti dicatat Konseling 1&ndash;6; yang sudah berhenti dicatat CAR 1&ndash;12. SUKSES hanya setelah CAR 12 tercatat. Rujuk ke FKRTL (RSUP NTB) bila: gagal setelah 3 bulan/6 pertemuan, dependensi sedang&ndash;berat, komorbid berat, atau withdrawal tak tertangani. Cadangan gratis: Quitline-INA <b>0-800-177-6565</b>.</p>
-    <h3>Yang TIDAK dilakukan di fase awal</h3>
-    <p>Tidak melibatkan kader, tidak konseling di pustu, tidak mengubah aplikasi ERM, tidak ruangan baru. Target utama: pasien dewasa/lansia klaster 3.</p>
-  </section>
+  
   <div id="modal-detail" class="modal hidden">
     <div class="card">
       <button class="btn2" type="button" onclick="tutupModal('modal-detail')">Tutup</button>
@@ -480,6 +432,68 @@
       <button class="btn2" type="button" onclick="tutupModal('modal-pilih-konseling')">Tutup</button>
     </div>
   </div>
+  <div id="modal-export" class="modal hidden">
+    <div class="card">
+<h2>Export</h2>
+    <p>Unduh rekap layanan UBM dalam bentuk dokumen Word (.docx). Tabelnya mengikuti format lampiran: satu baris per klien, kolom Identitas Peserta Puskesmas dan Form UBM.</p>
+    <p class="warn">Dokumen ini berisi NIK lengkap klien dan hanya untuk Tim UBM. Simpan dengan aman, jangan dibagikan ke luar tim.</p>
+    <button class="btn" type="button" onclick="unduhExportDocx()">Unduh Rekap DOCX (semua klien)</button>
+    <p id="export-status" class="muted"></p>
+    <div id="export-preview"></div>
+  
+      <button class="btn2" type="button" onclick="tutupModal('modal-export')">Tutup</button>
+    </div>
+  </div>
+  <div id="modal-baru" class="modal hidden">
+    <div class="card">
+      <h2>Pendaftaran Klien Baru</h2>
+<p class="muted">Isi sesuai KTP. NIK wajib 16 digit. Setelah tersimpan, buka klien itu dari Daftar Klien lalu tekan Pemeriksaan untuk konseling awal.</p>
+    <form id="form-baru" onsubmit="return simpanKlien(event)">
+      <div class="row">
+        <div><label>Tanggal daftar</label><input type="date" id="b-tgl" required></div>
+        <div><label>NIK (16 digit)</label><input id="b-nik" inputmode="numeric" maxlength="16" required placeholder="16 digit angka"></div>
+      </div>
+      <label>Nama lengkap</label><input id="b-nama" required>
+      <div class="row">
+        <div><label>Tanggal lahir</label><input type="date" id="b-lahir" required></div>
+        <div><label>L/P</label><select id="b-lp" required><option value="">Pilih</option><option>LAKI-LAKI</option><option>PEREMPUAN</option></select></div>
+      </div>
+      <label>Alamat</label><textarea id="b-alamat" required></textarea>
+      <div class="row">
+        <div><label>No HP aktif</label><input id="b-hp" required placeholder="Untuk FU telepon/WA"></div>
+        <div><label>Gol darah</label><select id="b-gol"><option value="">Tidak tahu</option><option>A</option><option>B</option><option>O</option><option>AB</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Pendidikan</label><select id="b-didik"><option value="">Pilih</option><option>TIDAK SEKOLAH</option><option>SD-SLTP</option><option>SLTA</option><option>DIPLOMA</option><option>SARJANA</option><option>PASCASARJANA</option></select></div>
+        <div><label>Status kawin</label><select id="b-kawin"><option value="">Pilih</option><option>BELUM</option><option>MENIKAH</option><option>JANDA-DUDA</option></select></div>
+      </div>
+      <label>Pekerjaan</label><input id="b-kerja">
+      <button class="btn" type="submit">Simpan Klien</button>
+    </form>
+  
+      <button class="btn2" type="button" onclick="tutupModal('modal-baru')">Tutup</button>
+    </div>
+  </div>
+  <div id="modal-help" class="modal hidden">
+    <div class="card">
+<h2>Help (dari Modul TOT UBM Kemenkes)</h2>
+    <h3>Metode 4T</h3>
+    <ol>
+      <li><b>Tanyakan:</b> tipe klien, profil perokok, tingkat adiksi (Fagerstrom).</li>
+      <li><b>Telaah:</b> motivasi 0&ndash;10 dan tahap perubahan (praperenungan, perenungan, persiapan, aksi, pemeliharaan, kekambuhan).</li>
+      <li><b>Tolong &amp; Nasehati:</b> tanggal berhenti, metode seketika/penundaan/pengurangan, antisipasi gejala putus nikotin, dukungan keluarga.</li>
+      <li><b>Tindak Lanjut:</b> FU 3&ndash;7 hari (telepon/WA), lalu 10 hari&ndash;2 minggu, 1, 3, 6, 12 bulan.</li>
+    </ol>
+    <h3>Belum mau berhenti? Pakai 5Rs (3&ndash;5 menit di poli)</h3>
+    <p>Relevance (dampak untuk diri &amp; keluarga), Risks (dampak negatif), Rewards (manfaat berhenti), Roadblocks (tantangan), Repetition (tanyakan status terus-menerus).</p>
+    <h3>Penilaian &amp; Rujukan</h3>
+    <p>CAR 1&ndash;12 = lama berhenti terus-menerus dalam bulan (CAR 12 = 12 bulan). Yang belum berhenti dicatat Konseling 1&ndash;6; yang sudah berhenti dicatat CAR 1&ndash;12. SUKSES hanya setelah CAR 12 tercatat. Rujuk ke FKRTL (RSUP NTB) bila: gagal setelah 3 bulan/6 pertemuan, dependensi sedang&ndash;berat, komorbid berat, atau withdrawal tak tertangani. Cadangan gratis: Quitline-INA <b>0-800-177-6565</b>.</p>
+    <h3>Yang TIDAK dilakukan di fase awal</h3>
+    <p>Tidak melibatkan kader, tidak konseling di pustu, tidak mengubah aplikasi ERM, tidak ruangan baru. Target utama: pasien dewasa/lansia klaster 3.</p>
+  
+      <button class="btn2" type="button" onclick="tutupModal('modal-help')">Tutup</button>
+    </div>
+  </div>
 </main>
 <script>
 var DATA={klien:[],konseling:[],jadwal:[]};
@@ -503,7 +517,6 @@ function run(fn,arg,ok){ if(!API_URL||API_URL.indexOf('___')>=0){ showMsg('API b
 var PARAM_PERIKSA='';
 try{ PARAM_PERIKSA=(new URLSearchParams(location.search)).get('periksa')||''; }catch(e){}
 if(PARAM_PERIKSA){ var _h=document.querySelector('header'); if(_h) _h.style.display='none'; var _n=document.getElementById('main-nav'); if(_n) _n.style.display='none'; }
-function bukaPemeriksaanBaru(nik){ var base=location.href.split('?')[0].split('#')[0]; window.open(base+'?periksa='+encodeURIComponent(nik), '_blank'); }
 function muat(){ run('getData',null,function(d){ DATA=d; renderAll(); isiKonselor(); if(PARAM_PERIKSA){ bukaPemeriksaan(PARAM_PERIKSA); if(!klienTerpilih) showMsg('Klien tidak ditemukan di Daftar Klien.','err'); } if(klienTerpilih && !document.getElementById('page-konseling').classList.contains('hidden')){ renderRiwayat(); renderJadwalKlien(); renderStatusOptions(); } }) }
 
 function exportRows(){
@@ -585,7 +598,7 @@ function renderKlien(){
   var rows=DATA.klien.filter(function(r){ var s=(r.values[3]+' '+r.values[2]).toLowerCase(); return (!q||s.indexOf(q)>=0) && (!f||r.values[16]===f) });
   document.getElementById('daftar-klien').innerHTML=rows.length? rows.map(function(r){
     var nik=r.values[2]; var riw=DATA.konseling.filter(function(x){return String(x.values[0])===String(nik)}); var jad=DATA.jadwal.filter(function(x){return String(x.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}); var jadDekat=jad.length?jad[0].values[0]:'-';
-    return '<div class="prev-card" ondblclick="bukaPemeriksaanBaru(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaanBaru(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
 }
 function detailKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
@@ -626,6 +639,9 @@ function renderStatusOptions(){
   sel.innerHTML=opts.map(function(o){return '<option>'+o+'</option>'}).join('');
   document.getElementById('s-note').textContent=hasCAR12(klienTerpilih.values[2]) ? 'SUKSES = berhenti 1 tahun terus-menerus, dibuktikan dengan CAR 12 yang sudah tercatat untuk klien ini.' : 'SUKSES belum muncul di pilihan ini karena klien belum tercatat CAR 12. SUKSES hanya bisa dipilih setelah CAR 12 tercatat.';
 }
+function bukaExport(){ renderExportPreview(); document.getElementById('modal-export').classList.remove('hidden'); }
+function bukaHelp(){ document.getElementById('modal-help').classList.remove('hidden'); }
+function bukaPendaftaranBaru(){ document.getElementById('modal-baru').classList.remove('hidden'); }
 function bukaPemeriksaan(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)}); if(!k) return;
   klienTerpilih=k;
@@ -636,6 +652,7 @@ function bukaPemeriksaan(nik){
   renderRiwayat(); renderJadwalKlien(); window.scrollTo(0,0);
 }
 function kembaliKeDaftar(){
+  if(PARAM_PERIKSA){ PARAM_PERIKSA=''; var _h=document.querySelector('header'); if(_h) _h.style.display=''; var _n=document.getElementById('main-nav'); if(_n) _n.style.display=''; try{ history.replaceState({}, '', location.pathname); }catch(e){} }
   document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')});
   document.querySelectorAll('#main-nav button').forEach(function(x){x.classList.remove('on')});
   document.querySelector('#main-nav button[data-tab="klien"]').classList.add('on');
@@ -882,7 +899,7 @@ function renderRiwayat(){
 function simpanKlien(e){ e.preventDefault();
   var o={tanggalDaftar:document.getElementById('b-tgl').value, nik:document.getElementById('b-nik').value, nama:document.getElementById('b-nama').value, tanggalLahir:document.getElementById('b-lahir').value, lp:document.getElementById('b-lp').value, alamat:document.getElementById('b-alamat').value, noHp:document.getElementById('b-hp').value, pendidikan:document.getElementById('b-didik').value, pekerjaan:document.getElementById('b-kerja').value, statusKawin:document.getElementById('b-kawin').value, golDarah:document.getElementById('b-gol').value, skorFagerstrom:'', motivasi:'', tahap:'', tanggalBerhenti:'', status:'Aktif'};
   if(o.nik.replace(/\D/g,'').length!==16){showMsg('NIK harus 16 digit angka.','err'); return false}
-  run('saveKlien',o,function(){showMsg('Klien tersimpan. Buka klien itu dari Daftar Klien lalu tekan Pemeriksaan untuk konseling awal.','ok'); muat()}); return false }
+  run('saveKlien',o,function(){showMsg('Klien tersimpan. Buka klien itu dari Daftar Klien lalu tekan Pemeriksaan untuk konseling awal.','ok'); tutupModal('modal-baru'); var f=document.getElementById('form-baru'); if(f) f.reset(); muat()}); return false }
 function vapeInfo(prefix){ var jenis=document.getElementById(prefix+'-jenis').value||''; if(jenis.indexOf('elektronik')<0 && jenis.indexOf('Keduanya')<0) return ''; return 'Perangkat: '+(document.getElementById(prefix+'-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById(prefix+'-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById(prefix+'-vape-frek').value||'-')+'; Pernyataan: '+(document.getElementById(prefix+'-vape-nyata').value||'-'); }
 function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return false}
   if(pertamaTerkunci()){showMsg('Konseling 1 sudah dilakukan untuk klien ini, jadi tidak bisa disimpan lagi.','err'); return false}
