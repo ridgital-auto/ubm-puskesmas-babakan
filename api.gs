@@ -134,8 +134,8 @@ function saveKonselorBaru(o) {
 function fagerstromLabel_(skor) {
   skor = Number(skor);
   if (isNaN(skor)) return '';
-  if (skor < 5) return 'Rendah';
-  if (skor === 5) return 'Moderat';
+  if (skor <= 3) return 'Rendah';
+  if (skor <= 6) return 'Sedang';
   return 'Tinggi';
 }
 
@@ -194,7 +194,8 @@ function findKlienRowByNik_(nik) {
 
 function saveKonselingAwal(o) {
   // o: nik, nama, tanggal, batangPerHari, usiaMulai, jenisRokok,
-  //    skorFagerstrom, motivasi, tahap, tanggalBerhenti, metode, dukungan
+  //    skorFagerstrom, motivasi, tahap, tanggalBerhenti, metode, dukungan,
+  //    co, bb, td, statusAwal (Lampiran 1, teks bebas)
   var r = findKlienRowByNik_(o.nik);
   if (r < 0) throw new Error('Klien tidak ditemukan. Daftarkan dulu di Klien Baru.');
   var sheet = ss_().getSheetByName(TAB_KLIEN);
@@ -212,9 +213,10 @@ function saveKonselingAwal(o) {
   var tindak = 'Tanggal berhenti: ' + (o.tanggalBerhenti || '(belum ditentukan)') +
     '. Metode: ' + (o.metode || '-') + '. Dukungan keluarga: ' + (o.dukungan || '-') +
     '. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.' +
-    (o.konselor ? ' Konselor: ' + o.konselor + '.' : '');
+    (o.konselor ? ' Konselor: ' + o.konselor + '.' : '') +
+    (o.statusAwal ? ' Status awal (Lampiran 1): ' + o.statusAwal : '');
   var ks = ss_().getSheetByName(TAB_KONSELING);
-  ks.appendRow([o.nik, o.nama || '', o.tanggal || '', 'Konseling 1', 'Masih merokok', '', '', '', ringkas, tindak]);
+  ks.appendRow([o.nik, o.nama || '', o.tanggal || '', 'Konseling 1', 'Masih merokok', o.co || '', o.bb || '', o.td || '', ringkas, tindak]);
   return { ok: true };
 }
 
@@ -252,8 +254,8 @@ function saveKonseling(o) {
 
 function updateKlienStatus(o) {
   // o: nik, status
-  // Aturan baru: SUKSES hanya setelah CAR 12 tercatat di tab Konseling & FU.
-  // Yang belum berhenti dicatat Konseling 1-6, yang sudah berhenti dicatat CAR 1-12.
+  // Aturan baru: SUKSES hanya setelah 12 bulan berhenti tercatat di tab Konseling & FU.
+  // Yang belum berhenti dicatat Konseling 1-6, yang sudah berhenti dicatat FU 1-7 (FU 7 = 12 bulan = CAR 12).
   var allowed = ['Aktif', 'SUKSES', 'KAMBUH', 'DO', 'Dirujuk'];
   if (allowed.indexOf(o.status) < 0) throw new Error('Status tidak dikenal.');
   var r = findKlienRowByNik_(o.nik);
@@ -265,10 +267,10 @@ function updateKlienStatus(o) {
     if (last >= 2) {
       var vals = ks.getRange(2, 1, last - 1, 4).getValues();
       for (var i = 0; i < vals.length; i++) {
-        if (String(vals[i][0]).replace(/\D/g, '') === String(o.nik).replace(/\D/g, '') && String(vals[i][3]) === 'CAR 12') { hasCAR12 = true; break; }
+        if (String(vals[i][0]).replace(/\D/g, '') === String(o.nik).replace(/\D/g, '') && (String(vals[i][3]) === 'CAR 12' || String(vals[i][3]) === 'FU 7')) { hasCAR12 = true; break; }
       }
     }
-    if (!hasCAR12) throw new Error('SUKSES hanya bisa dipilih setelah CAR 12 tercatat untuk klien ini.');
+    if (!hasCAR12) throw new Error('SUKSES hanya bisa dipilih setelah FU 7 (12 bulan setelah berhenti) atau CAR 12 tercatat untuk klien ini.');
   }
   ss_().getSheetByName(TAB_KLIEN).getRange(r, 17).setValue(o.status);
   return { ok: true };
