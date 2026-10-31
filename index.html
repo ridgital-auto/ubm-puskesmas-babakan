@@ -50,8 +50,8 @@
 </header>
 <nav id="main-nav">
   <button class="on" data-tab="beranda">Beranda</button>
-  <button data-tab="klien">Daftar Klien</button>
   <button data-tab="baru">Pendaftaran</button>
+  <button data-tab="klien">Daftar Klien</button>
   <button data-tab="panduan">Help</button>
 </nav>
 <main>
@@ -424,7 +424,7 @@ function renderKlien(){
   var rows=DATA.klien.filter(function(r){ var s=(r.values[3]+' '+r.values[2]).toLowerCase(); return (!q||s.indexOf(q)>=0) && (!f||r.values[16]===f) });
   document.getElementById('daftar-klien').innerHTML=rows.length? rows.map(function(r){
     var nik=r.values[2]; var riw=DATA.konseling.filter(function(x){return String(x.values[0])===String(nik)}); var jad=DATA.jadwal.filter(function(x){return String(x.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}); var jadDekat=jad.length?jad[0].values[0]:'-';
-    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+' <span class="pill">'+esc(r.values[16]||'Aktif')+'</span></h3><p class="muted">NIK: '+maskNik(nik)+' &middot; Daftar: '+esc(r.values[1])+'</p><p>Preview: Fagerstrom '+esc(r.values[12]||'-')+' &middot; Motivasi '+esc(r.values[13]||'-')+'/10 &middot; Tahap: '+esc(r.values[14]||'-')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p><p>Riwayat: '+riw.length+' catatan &mdash; '+progresKlien(r)+'</p><p>Perjanjian: '+jad.length+' &middot; Terdekat: '+esc(jadDekat)+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
 }
 function detailKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
