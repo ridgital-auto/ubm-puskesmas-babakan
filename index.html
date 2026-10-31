@@ -30,6 +30,8 @@
   .fab-export{position:fixed;right:16px;bottom:16px;z-index:50;width:56px;height:56px;border-radius:50%;background:#e11d48;color:#fff;border:none;box-shadow:0 4px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer}
   .fab-export svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .fab-help{position:fixed;right:12px;top:12px;z-index:50;width:44px;height:44px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;box-shadow:0 2px 8px rgba(0,0,0,.25);font-size:22px;font-weight:bold;cursor:pointer}
+  .fab-klien{position:fixed;right:64px;top:12px;z-index:50;width:44px;height:44px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;box-shadow:0 2px 8px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .fab-klien svg{width:24px;height:24px;fill:none;stroke:#e11d48;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .modal .card{max-width:680px;width:100%;max-height:92vh;overflow:auto}
   .modal.hidden{display:none}
   .prev-card{border:1px solid #fecdd3;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
@@ -51,10 +53,6 @@
   <h1>UBM Puskesmas Babakan</h1>
   <p>Layanan konseling berhenti merokok &mdash; Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, dengan perjanjian. Data tersimpan di Sheet e-RM UBM lewat API Apps Script.</p>
 </header>
-<nav id="main-nav">
-  <button class="on" data-tab="beranda">Beranda</button>
-  <button data-tab="klien">Daftar Klien</button>
-</nav>
 <main>
   <div id="msg"></div>
 
@@ -63,6 +61,7 @@
     <h2>Beranda</h2>
     <button class="fab-export" type="button" onclick="bukaExport()" title="Export" aria-label="Export"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></button>
     <button class="fab-help" type="button" onclick="bukaHelp()" title="Help" aria-label="Help">?</button>
+    <button class="fab-klien" type="button" onclick="tampilDaftarKlien()" title="Daftar Klien" aria-label="Daftar Klien"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5c2.5.5 4 2 4.5 4.5"/></svg></button>
     <p class="muted">Angka di bawah dihitung dari tab Klien, Konseling &amp; FU, dan Jadwal Perjanjian di Sheet e-RM UBM.</p>
     <div class="grid" id="stats"></div>
     <h3>Jadwal terdekat</h3>
@@ -72,6 +71,7 @@
   </section>
 
   <section id="tab-klien" class="card hidden">
+    <p><button class="btn2" type="button" onclick="tampilBeranda()">&larr; Beranda</button></p>
     <h2>Daftar Klien</h2>
     <p><button class="btn" type="button" onclick="bukaPendaftaranBaru()">+ Klien</button></p>
     <label>Cari nama / NIK</label>
@@ -643,6 +643,8 @@ function renderStatusOptions(){
   sel.innerHTML=opts.map(function(o){return '<option>'+o+'</option>'}).join('');
   document.getElementById('s-note').textContent=hasCAR12(klienTerpilih.values[2]) ? 'SUKSES = berhenti 1 tahun terus-menerus, dibuktikan dengan CAR 12 yang sudah tercatat untuk klien ini.' : 'SUKSES belum muncul di pilihan ini karena klien belum tercatat CAR 12. SUKSES hanya bisa dipilih setelah CAR 12 tercatat.';
 }
+function tampilBeranda(){ document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')}); document.getElementById('tab-beranda').classList.remove('hidden'); window.scrollTo(0,0); }
+function tampilDaftarKlien(){ document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')}); document.getElementById('tab-klien').classList.remove('hidden'); renderKlien(); window.scrollTo(0,0); }
 function bukaExport(){ renderExportPreview(); document.getElementById('modal-export').classList.remove('hidden'); }
 function bukaHelp(){ document.getElementById('modal-help').classList.remove('hidden'); }
 function bukaPendaftaranBaru(){ document.getElementById('modal-baru').classList.remove('hidden'); }
@@ -656,11 +658,8 @@ function bukaPemeriksaan(nik){
   renderRiwayat(); renderJadwalKlien(); window.scrollTo(0,0);
 }
 function kembaliKeDaftar(){
-  if(PARAM_PERIKSA){ PARAM_PERIKSA=''; var _h=document.querySelector('header'); if(_h) _h.style.display=''; var _n=document.getElementById('main-nav'); if(_n) _n.style.display=''; try{ history.replaceState({}, '', location.pathname); }catch(e){} }
-  document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')});
-  document.querySelectorAll('#main-nav button').forEach(function(x){x.classList.remove('on')});
-  document.querySelector('#main-nav button[data-tab="klien"]').classList.add('on');
-  document.getElementById('tab-klien').classList.remove('hidden'); renderKlien();
+  if(PARAM_PERIKSA){ PARAM_PERIKSA=''; var _h=document.querySelector('header'); if(_h) _h.style.display=''; try{ history.replaceState({}, '', location.pathname); }catch(e){} }
+  tampilDaftarKlien();
 }
 function hasKonseling1(nik){ return DATA.konseling.some(function(r){return String(r.values[0])===String(nik) && String(r.values[3])==='Konseling 1'}); }
 function pertamaTerkunci(){ if(!klienTerpilih) return false; return hasKonseling1(klienTerpilih.values[2]); }
