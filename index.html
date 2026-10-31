@@ -34,6 +34,8 @@
   .prev-card h4{margin:0 0 6px 0;font-size:16px}
   .prev-card p{margin:4px 0}
   .prev-fu{border-top:1px dashed #fecdd3;margin-top:10px;padding-top:8px}
+  .pilih-btn{display:block;width:100%;text-align:left;border:1px solid #e11d48;background:#fff;color:#e11d48;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:15px;margin:6px 0}
+  .pilih-btn:disabled{opacity:.45;cursor:not-allowed;background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb}
   .fag-opt{display:block;padding:12px 10px;border:1px solid #fecdd3;border-radius:10px;margin:8px 0;cursor:pointer;font-size:15px}
   .fag-opt:has(input:checked){background:#fce7f3;border-color:#e11d48;font-weight:bold}
   .fag-opt input[type=radio]{width:20px;height:20px;accent-color:#e11d48;vertical-align:middle;margin-right:8px}
@@ -109,7 +111,7 @@
     <h2 id="pk-judul" style="margin-top:12px">Pemeriksaan / Konseling &amp; FU</h2>
     <div id="pk-info" class="muted"></div>
     <div style="padding:10px 0">
-      <button id="btn-tambah-konseling" class="btn" type="button" onclick="bukaKonselingPertama()">+ Konseling</button>
+      <button id="btn-tambah-konseling" class="btn" type="button" onclick="bukaPilihKonseling()">+ Konseling</button>
       <p id="pk-lock-note" class="muted"></p>
     </div>
 
@@ -358,6 +360,14 @@
       <button class="btn2" type="button" onclick="tutupModal('modal-konseling')">Tutup</button>
     </div>
   </div>
+  <div id="modal-pilih-konseling" class="modal hidden">
+    <div class="card">
+      <h2>Pilih Konseling ke Berapa?</h2>
+      <p class="muted">Nomor yang sudah dilakukan tampil lebih samar dan tidak bisa dipilih lagi.</p>
+      <div id="pilih-konseling-isi"></div>
+      <button class="btn2" type="button" onclick="tutupModal('modal-pilih-konseling')">Tutup</button>
+    </div>
+  </div>
 </main>
 <script>
 var DATA={klien:[],konseling:[],jadwal:[]};
@@ -461,23 +471,42 @@ function kembaliKeDaftar(){
   document.getElementById('tab-klien').classList.remove('hidden'); renderKlien();
 }
 function hasKonseling1(nik){ return DATA.konseling.some(function(r){return String(r.values[0])===String(nik) && String(r.values[3])==='Konseling 1'}); }
-function pertamaTerkunci(){ if(!klienTerpilih) return false; return DATA.konseling.some(function(r){return String(r.values[0])===String(klienTerpilih.values[2])}); }
+function pertamaTerkunci(){ if(!klienTerpilih) return false; return hasKonseling1(klienTerpilih.values[2]); }
 function terapkanKunciPertama(){
   var btn=document.getElementById('btn-tambah-konseling'); if(!btn||!klienTerpilih) return;
-  var lock=document.getElementById('pk-lock'); var note=document.getElementById('pk-lock-note');
-  if(pertamaTerkunci()){
-    var t=DATA.konseling.filter(function(r){return String(r.values[0])===String(klienTerpilih.values[2])}).pop();
-    btn.disabled=true;
-    if(note) note.textContent='Konseling Pertama sudah dilakukan'+(t?' pada '+t.values[2]:'')+'. Tombol +Konseling nonaktif. Gunakan Follow Up pada kartu riwayat untuk konseling lanjutan.';
-    if(lock){ lock.classList.remove('hidden'); lock.innerHTML='<b>Konseling Pertama nonaktif.</b> Sudah ada riwayat untuk klien ini, jadi Konseling Pertama tidak bisa diisi lagi.'; }
-  } else {
-    btn.disabled=false;
-    if(note) note.textContent='';
-    if(lock) lock.classList.add('hidden');
-  }
+  var note=document.getElementById('pk-lock-note');
+  btn.disabled=false;
+  if(note) note.textContent='Tekan +Konseling, lalu pilih nomor konseling yang belum dilakukan. Nomor yang sudah dilakukan tampil lebih samar dan tidak bisa dipilih lagi.';
+  var lock=document.getElementById('pk-lock'); if(lock) lock.classList.add('hidden');
 }
+function bukaPilihKonseling(){
+  if(!klienTerpilih) return;
+  var done={}; DATA.konseling.filter(function(r){return String(r.values[0])===String(klienTerpilih.values[2])}).forEach(function(r){done[String(r.values[3])]=true});
+  function tombol(jenis){
+    if(done[jenis]) return '<button class="pilih-btn" type="button" disabled>'+esc(jenis)+' &mdash; sudah dilakukan</button>';
+    return '<button class="pilih-btn" type="button" onclick="pilihKonseling(\''+jenis+'\')">'+esc(jenis)+'</button>';
+  }
+  var kons=['Konseling 1','Konseling 2','Konseling 3','Konseling 4','Konseling 5','Konseling 6'];
+  var cars=['CAR 1','CAR 2','CAR 3','CAR 4','CAR 5','CAR 6','CAR 7','CAR 8','CAR 9','CAR 10','CAR 11','CAR 12'];
+  var fus=['FU telepon-WA','FU tatap muka'];
+  document.getElementById('pilih-konseling-isi').innerHTML='<h3>Konseling</h3>'+kons.map(tombol).join('')+'<h3>CAR (sudah berhenti)</h3>'+cars.map(tombol).join('')+'<h3>Follow Up</h3>'+fus.map(tombol).join('');
+  document.getElementById('modal-pilih-konseling').classList.remove('hidden');
+}
+function pilihKonseling(jenis){
+  tutupModal('modal-pilih-konseling');
+  if(jenis==='Konseling 1'){ bukaKonselingPertama(); return; }
+  bukaFUBaru(jenis);
+}
+function bukaFUBaru(jenis){
+  if(!klienTerpilih) return;
+  document.getElementById('modal-fu-judul').textContent='Konseling / Follow Up: '+klienTerpilih.values[3];
+  document.getElementById('m-tgl').value=todayStr();
+  document.getElementById('m-jenis').value=jenis;
+  document.getElementById('modal-fu').classList.remove('hidden');
+}
+
 function bukaKonselingPertama(){
-  if(pertamaTerkunci()){ showMsg('Konseling Pertama nonaktif karena sudah ada riwayat untuk klien ini. Gunakan Follow Up pada kartu riwayat untuk konseling lanjutan.','err'); terapkanKunciPertama(); return; }
+  if(pertamaTerkunci()){ showMsg('Konseling 1 sudah dilakukan untuk klien ini, jadi tidak bisa dipilih lagi. Pilih nomor konseling lain yang belum dilakukan.','err'); return; }
   document.getElementById('modal-konseling').classList.remove('hidden');
 }
 
@@ -592,7 +621,7 @@ function simpanKlien(e){ e.preventDefault();
   run('saveKlien',o,function(){showMsg('Klien tersimpan. Buka klien itu dari Daftar Klien lalu tekan Pemeriksaan untuk konseling awal.','ok'); muat()}); return false }
 function vapeInfo(prefix){ var jenis=document.getElementById(prefix+'-jenis').value||''; if(jenis.indexOf('elektronik')<0 && jenis.indexOf('Keduanya')<0) return ''; return 'Perangkat: '+(document.getElementById(prefix+'-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById(prefix+'-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById(prefix+'-vape-frek').value||'-')+'; Pernyataan: '+(document.getElementById(prefix+'-vape-nyata').value||'-'); }
 function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return false}
-  if(pertamaTerkunci()){showMsg('Konseling Pertama nonaktif karena sudah ada riwayat untuk klien ini. Gunakan Follow Up pada kartu riwayat untuk konseling lanjutan.','err'); return false}
+  if(pertamaTerkunci()){showMsg('Konseling 1 sudah dilakukan untuk klien ini, jadi tidak bisa disimpan lagi.','err'); return false}
   var fagTotal=hitungFag(); var lengkap=true; for(var i=1;i<=6;i++){ if(!document.querySelector('input[name="fag'+i+'"]:checked')) lengkap=false; }
   if(!lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false}
   var jenisA=document.getElementById('a-jenis').value;
