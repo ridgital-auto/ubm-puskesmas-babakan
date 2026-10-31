@@ -134,8 +134,9 @@
   </div>
   <div id="modal-fu" class="modal hidden">
     <div class="card">
-      <button class="btn2" type="button" onclick="tutupModal('modal-fu')">Tutup</button>
+      <button class="btn2" type="button" onclick="batalEditForm()">Tutup</button>
       <h2 id="modal-fu-judul">Konseling / Follow Up</h2>
+      <p id="mode-edit-m" class="warn hidden">Mode edit: Anda mengubah catatan yang sudah tersimpan. Form ini sama seperti form aslinya. Checklist Fagerstrom tidak tersimpan per pertanyaan, jadi kosong di sini — isi ulang bila ingin mengubah skornya, atau biarkan kosong agar skor lama dipertahankan.</p>
       <form onsubmit="return simpanFUModal(event)">
         <div class="row">
           <div><label>Tanggal</label><input type="date" id="m-tgl" required></div>
@@ -284,8 +285,9 @@
   <div id="modal-konseling" class="modal hidden">
     <div class="card">
       <h2>Form Pemeriksaan Lengkap</h2>
-      <button class="btn2" type="button" onclick="tutupModal('modal-konseling')">Tutup</button>
+      <button class="btn2" type="button" onclick="batalEditForm()">Tutup</button>
     <div id="pk-lock" class="warn hidden"></div>
+    <p id="mode-edit-a" class="warn hidden">Mode edit: Anda mengubah Konseling 1 yang sudah tersimpan. Form ini sama seperti form aslinya. Checklist Fagerstrom tidak tersimpan per pertanyaan, jadi kosong di sini — isi ulang bila ingin mengubah skornya, atau biarkan kosong agar skor lama dipertahankan. Perubahan skor/tahap/tanggal berhenti di sini tidak mengubah kolom profil klien di Sheet Klien.</p>
     <h3>A. Konseling Awal &mdash; Metode 4T (Pertemuan 1)</h3>
     <form onsubmit="return simpanAwal(event)">
       <label>Tanggal konseling awal</label><input type="date" id="a-tgl" required>
@@ -720,6 +722,7 @@ function pilihKonseling(jenis){
 }
 function bukaFUBaru(jenis){
   if(!klienTerpilih) return;
+  editRow=null; editLama=null; document.getElementById('mode-edit-m').classList.add('hidden'); resetFormFU();
   document.getElementById('modal-fu-judul').textContent='Konseling / Follow Up: '+klienTerpilih.values[3];
   document.getElementById('m-tgl').value=todayStr();
   document.getElementById('m-jenis').value=jenis;
@@ -728,6 +731,7 @@ function bukaFUBaru(jenis){
 
 function bukaKonselingPertama(){
   if(pertamaTerkunci()){ showMsg('Konseling 1 sudah dilakukan untuk klien ini, jadi tidak bisa dipilih lagi. Pilih nomor konseling lain yang belum dilakukan.','err'); return; }
+  editRow=null; editLama=null; document.getElementById('mode-edit-a').classList.add('hidden'); resetFormAwal();
   document.getElementById('modal-konseling').classList.remove('hidden');
 }
 
@@ -767,20 +771,67 @@ function mintaHapusKlien(nik){
   document.getElementById('hapus-pass').value='';
   document.getElementById('modal-hapus').classList.remove('hidden');
 }
+// ==== Edit Riwayat memakai form aslinya (v33) ====
+var editLama=null;
+function setNilai(id,v){ var el=document.getElementById(id); if(el) el.value=(v===null||v===undefined)?'':v; }
+function centangRadio(nama,nilai){ if(nilai===''||nilai===null||nilai===undefined) return; var r=document.querySelector('input[name="'+nama+'"][value="'+nilai+'"]'); if(r) r.checked=true; }
+function centangKotak(nama,daftar){ if(!daftar) return; daftar.forEach(function(v){ var c=document.querySelector('input[name="'+nama+'"][value="'+v+'"]'); if(c) c.checked=true; }); }
+function setPilih(id,nilai){ var sel=document.getElementById(id); if(!sel||nilai===''||nilai===null||nilai===undefined) return; var ada=false; for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===nilai||sel.options[i].text===nilai) ada=true; } if(!ada){ var o=document.createElement('option'); o.value=nilai; o.text=nilai; sel.appendChild(o); } sel.value=nilai; }
+function uraiBerlabel(teks,labels){ var out={}; if(!teks) return out; labels.forEach(function(lab){ var idx=teks.indexOf(lab+': '); if(idx<0){ out[lab]=''; return; } var start=idx+lab.length+2; var end=teks.length; labels.forEach(function(l2){ if(l2===lab) return; var j=teks.indexOf(l2+': ',start); if(j>=0&&j<end) end=j; }); var v=teks.slice(start,end).trim().replace(/;\s*$/,'').replace(/\.\s*$/,''); out[lab]=v; }); return out; }
+function uraiStatusAwal(teks){ var labels=['No. RM','Nama Sekolah','Kelas','Alasan mulai merokok','Lama merokok','Jumlah rokok','Anggota keluarga yang merokok','Pemeriksaan awal','Riwayat berhenti sebelumnya','Tingkat kesiapan','Alasan ingin berhenti','Disampaikan','Pilihan terapi','Pertemuan berikutnya']; var d=uraiBerlabel(teks||'',labels); var o={}; o.rm=d['No. RM']||''; o.sekolah=d['Nama Sekolah']||''; o.kelas=d['Kelas']||''; o.alasanMulai=d['Alasan mulai merokok']||''; var lm=(d['Lama merokok']||'').match(/(\d+)/); o.lama=lm?lm[1]:''; var jm=(d['Jumlah rokok']||'').match(/(\d+)/); o.batang=jm?jm[1]:''; var kg=d['Anggota keluarga yang merokok']||''; var mkg=kg.match(/^(Ya|Tidak)(?: \((.+)\))?$/); o.keluarga=mkg?mkg[1]:kg; o.keluargaSiapa=mkg&&mkg[2]?mkg[2]:''; var px=d['Pemeriksaan awal']||''; var m; m=px.match(/TB ([\d.]+) cm/); o.tb=m?m[1]:''; m=px.match(/Nilai APE ([\d.]+) ml/); o.ape=m?m[1]:''; m=px.match(/Tes Nikotin Urin: (.+)$/); o.urin=m?m[1].trim():''; var rj=d['Riwayat berhenti sebelumnya']||''; m=rj.match(/(\d+) kali usaha berhenti/); o.riwJumlah=m?m[1]:''; m=rj.match(/terakhir (\d{4}-\d{2}-\d{2})/); o.riwTerakhir=m?m[1]:''; m=rj.match(/(\d+) hari bebas rokok/); o.riwHari=m?m[1]:''; m=rj.match(/cara: (.+?)(?=, masalah:|, alasan kembali:|$)/); o.riwCara=m?m[1]:''; m=rj.match(/masalah: (.+?)(?=, alasan kembali:|$)/); o.riwMasalah=m?m[1]:''; m=rj.match(/alasan kembali: (.+)$/); o.riwKembali=m?m[1]:''; o.siap=d['Tingkat kesiapan']||''; o.alasanBerhenti=d['Alasan ingin berhenti']||''; var smp=d['Disampaikan']||''; o.sampaiDampak=smp.indexOf('Dampak buruk merokok')>=0; o.sampaiManfaat=smp.indexOf('Manfaat berhenti merokok')>=0; o.sampaiTantangan=smp.indexOf('Tantangan yang akan dihadapi')>=0; o.berikutnya=d['Pertemuan berikutnya']||''; return o; }
+function uraiPenilaian(teks){ var o={fag:'',motivasi:'',motAlasan:'',konselor:''}; if(!teks) return o; var idx=teks.lastIndexOf('Penilaian: '); var s=idx>=0?teks.slice(idx+11):teks; var m; m=s.match(/Fagerstrom (\d+)/); if(m) o.fag=m[1]; m=s.match(/Motivasi (\d+)\/10/); if(m) o.motivasi=m[1]; m=s.match(/Alasan motivasi: (.+?)(?=; (Konselor|Jenis rokok|Rokok elektronik):|$)/); if(m) o.motAlasan=m[1]; m=s.match(/Konselor: ([^;]+)/); if(m) o.konselor=m[1].trim(); return o; }
+function pisahLampiran4(teks){ var out={dasar:teks||'',fu:''}; if(!teks) return out; var idx=teks.indexOf('[Lampiran 4]'); if(idx<0) return out; out.dasar=teks.slice(0,idx).replace(/\s*\|\s*$/,'').trim(); out.fu=teks.slice(idx+13).trim(); return out; }
+function uraiFU4Kendala(fu){ var labels=['Hasil follow up','Kendala terberat','Relaps','Withdrawal effect','Kendala berhenti','Kebiasaan yang menjadi kendala','Metode yang digunakan','Batang yang dikonsumsi bila masih merokok']; return uraiBerlabel(fu||'',labels); }
+function uraiFU4Tindak(fu){ var labels=['Langkah yang diambil','Rencana/saran yang diberikan','Kesimpulan follow up','Akan berhenti pada tanggal','Tidak yakin, alasan']; return uraiBerlabel(fu||'',labels); }
+function resetFormAwal(){ document.querySelectorAll('#modal-konseling input, #modal-konseling textarea, #modal-konseling select').forEach(function(el){ if(el.type==='checkbox'||el.type==='radio') el.checked=false; else el.value=''; }); document.querySelectorAll('#modal-konseling select').forEach(function(s){ s.selectedIndex=0; }); document.getElementById('a-terapi-konseling').checked=true; document.getElementById('a-tgl').value=todayStr(); ['a-fag-box','a-vape','a-mot-box','a-ps4-box','a-konselor-baru-box'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hidden'); }); ['a-fag-btn','a-mot-btn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.textContent=id==='a-fag-btn'?'Tampilkan Form Fagerstrom':'Tampilkan Form Skala Motivasi'; }); hitungFag(); hitungPS(); document.getElementById('a-mot-val').textContent='-'; document.getElementById('a-co-interp').textContent=''; document.getElementById('a-imt').textContent='-'; isiKonselor(); }
+function resetFormFU(){ document.querySelectorAll('#modal-fu input, #modal-fu textarea, #modal-fu select').forEach(function(el){ if(el.type==='checkbox'||el.type==='radio') el.checked=false; else el.value=''; }); document.querySelectorAll('#modal-fu select').forEach(function(s){ s.selectedIndex=0; }); document.getElementById('m-tgl').value=todayStr(); ['m-fag-box','m-mot-box','m-konselor-baru-box'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hidden'); }); ['m-fag-btn','m-mot-btn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.textContent=id==='m-fag-btn'?'Tampilkan Form Fagerstrom':'Tampilkan Form Skala Motivasi'; }); hitungMFag(); document.getElementById('m-mot-val').textContent='-'; document.getElementById('m-co-interp').textContent=''; isiKonselor(); }
+function batalEditForm(){ editRow=null; editLama=null; document.getElementById('mode-edit-a').classList.add('hidden'); document.getElementById('mode-edit-m').classList.add('hidden'); tutupModal('modal-konseling'); tutupModal('modal-fu'); }
+function labelFagBackend(skor){ skor=Number(skor); if(isNaN(skor)) return ''; if(skor<=3) return 'Rendah'; if(skor<=6) return 'Sedang'; return 'Tinggi'; }
+function ringkasAwalDariO(o){ var ringkas='Konseling awal 4T. Profil: '+(o.batangPerHari||'-')+' batang/hari, mulai merokok usia '+(o.usiaMulai||'-')+', jenis: '+(o.jenisRokok||'-')+'. Fagerstrom '+o.skorFagerstrom+' ('+labelFagBackend(o.skorFagerstrom)+'), motivasi '+o.motivasi+'/10, tahap: '+(o.tahap||'-')+'.'+(o.vapeInfo?' Rokok elektronik: '+o.vapeInfo:'')+(o.motAlasan?' Alasan motivasi: '+o.motAlasan:''); var tindak='Tanggal berhenti: '+(o.tanggalBerhenti||'(belum ditentukan)')+'. Metode: '+(o.metode||'-')+'. Dukungan keluarga: '+(o.dukungan||'-')+'. Antisipasi gejala putus nikotin minggu pertama sudah dibahas.'+(o.konselor?' Konselor: '+o.konselor+'.':'')+(o.statusAwal?' Status awal (Lampiran 1): '+o.statusAwal:''); return {kendala:ringkas,tindak:tindak}; }
+function isiFormAwalDariRiwayat(r){
+  var k=klienTerpilih||DATA.klien.find(function(x){return String(x.values[2])===String(r.values[0])}); if(!k) return; klienTerpilih=k;
+  resetFormAwal(); editRow=r.row; var kendala=r.values[8]||'', tindak=r.values[9]||'';
+  var fagM=kendala.match(/Fagerstrom (\d+)/); var motM=kendala.match(/motivasi (\d+)\/10/); var motAlasanM=kendala.match(/Alasan motivasi: (.+)$/); var vapeM=kendala.match(/Rokok elektronik: (.+?)(?= Alasan motivasi:|$)/);
+  editLama={kendala:kendala,tindak:tindak,fagScore:fagM?fagM[1]:'',motivasi:motM?motM[1]:'',motAlasan:motAlasanM?motAlasanM[1]:'',vapeInfo:vapeM?vapeM[1]:''};
+  setNilai('a-tgl',r.values[2]); setNilai('a-co',r.values[5]); setNilai('a-bb',r.values[6]); setNilai('a-td',r.values[7]);
+  var batangM=kendala.match(/(\d+) batang\/hari/); if(batangM) setNilai('a-batang',batangM[1]);
+  var usiaM=kendala.match(/mulai merokok usia (\d+)/); if(usiaM) setNilai('a-usia',usiaM[1]);
+  var jenisM=kendala.match(/jenis: ([^.]+)\./); if(jenisM) setPilih('a-jenis',jenisM[1].trim());
+  toggleVape('a-jenis','a-vape');
+  setNilai('a-tahap',k.values[14]); setNilai('a-berhenti',k.values[15]);
+  if(editLama.motivasi){ centangRadio('a-mot-pilih',editLama.motivasi); document.getElementById('a-mot-val').textContent=editLama.motivasi; var catM=(editLama.motAlasan||'').match(/\. Catatan: (.+)$/); if(catM) setNilai('a-mot-alasan',catM[1]); }
+  if(editLama.vapeInfo){ var psM; var re=/PS(\d+)=([^,\]]+)/g; while((psM=re.exec(editLama.vapeInfo))!==null){ centangRadio('ps'+psM[1],psM[2].trim()); } togglePS4(); var vM; vM=editLama.vapeInfo.match(/Perangkat: ([^;]+);/); if(vM) setNilai('a-vape-alat',vM[1].trim()); vM=editLama.vapeInfo.match(/Kadar nikotin: ([^;]+);/); if(vM) setNilai('a-vape-nik',vM[1].trim()); vM=editLama.vapeInfo.match(/Frekuensi: ([^;]+);/); if(vM) setNilai('a-vape-frek',vM[1].trim()); vM=editLama.vapeInfo.match(/Catatan: (.+)$/); if(vM) setNilai('a-vape-nyata',vM[1].trim()); hitungPS(); }
+  var metM=tindak.match(/Metode: (.+?)\. Dukungan keluarga:/); if(metM) setPilih('a-metode',metM[1].trim());
+  var dukM=tindak.match(/Dukungan keluarga: (.+?)\. Antisipasi/); if(dukM) setNilai('a-dukung',dukM[1].trim());
+  var konM=tindak.match(/Konselor: ([^.]+)\./); if(konM) setPilih('a-konselor',konM[1].trim());
+  var saM=tindak.match(/Status awal \(Lampiran 1\): (.+)$/); if(saM){ var s=uraiStatusAwal(saM[1]); setNilai('a-rm',s.rm); setNilai('a-sekolah',s.sekolah); setNilai('a-kelas',s.kelas); setNilai('a-alasan-mulai',s.alasanMulai); if(!document.getElementById('a-batang').value) setNilai('a-batang',s.batang); setNilai('a-lama',s.lama); setPilih('a-keluarga',s.keluarga); setNilai('a-keluarga-siapa',s.keluargaSiapa); setNilai('a-tb',s.tb); setNilai('a-ape',s.ape); setNilai('a-urin',s.urin); setNilai('a-riw-jumlah',s.riwJumlah); setNilai('a-riw-terakhir',s.riwTerakhir); setNilai('a-riw-hari',s.riwHari); setNilai('a-riw-cara',s.riwCara); setNilai('a-riw-masalah',s.riwMasalah); setNilai('a-riw-kembali',s.riwKembali); setPilih('a-siap',s.siap); setNilai('a-alasan-berhenti',s.alasanBerhenti); document.getElementById('a-sampai-dampak').checked=!!s.sampaiDampak; document.getElementById('a-sampai-manfaat').checked=!!s.sampaiManfaat; document.getElementById('a-sampai-tantangan').checked=!!s.sampaiTantangan; setNilai('a-berikutnya',s.berikutnya); }
+  hitungIMT();
+  document.getElementById('mode-edit-a').classList.remove('hidden');
+  document.getElementById('modal-konseling').classList.remove('hidden');
+}
+function isiFormFUDariRiwayat(r){
+  var k=klienTerpilih||DATA.klien.find(function(x){return String(x.values[2])===String(r.values[0])}); if(!k) return; klienTerpilih=k;
+  resetFormFU(); editRow=r.row; var kendala=r.values[8]||'', tindak=r.values[9]||'';
+  var pen=uraiPenilaian(tindak);
+  editLama={kendala:kendala,tindak:tindak,fagScore:pen.fag,motivasi:pen.motivasi,motAlasan:pen.motAlasan,konselor:pen.konselor};
+  setNilai('m-tgl',r.values[2]); setPilih('m-jenis',r.values[3]); setPilih('m-status',r.values[4]); setNilai('m-co',r.values[5]); if(r.values[5]!==''&&r.values[5]!==null) document.getElementById('m-co-interp').textContent=coInterpretasi(Number(r.values[5])); setNilai('m-bb',r.values[6]); setNilai('m-td',r.values[7]);
+  var pk=pisahLampiran4(kendala); setNilai('m-kendala',pk.dasar);
+  var pt=tindak; var idxPen=pt.lastIndexOf(' | Penilaian: '); if(idxPen>=0) pt=pt.slice(0,idxPen); var pt2=pisahLampiran4(pt); setNilai('m-tindak',pt2.dasar);
+  var fk=uraiFU4Kendala(pk.fu); setPilih('f-hasil',fk['Hasil follow up']); setNilai('f-kendala-terberat',fk['Kendala terberat']); setPilih('f-relaps',fk['Relaps'] ? (fk['Relaps'].indexOf('Ya')===0?'Ya':'Tidak') : '');
+  (function(){ var rel=fk['Relaps']||''; var pm=rel.match(/\(penyebab: (.+)\)/); if(!pm) return; var daftar=pm[1].split(', '); var lain=[]; daftar.forEach(function(v){ var vv=v.trim(); var c=document.querySelector('input[name="f-relaps-sebab"][value="'+vv+'"]'); if(c) c.checked=true; else lain.push(vv); }); if(lain.length) setNilai('f-relaps-lain',lain.join(', ')); })();
+  centangKotak('f-wd',(fk['Withdrawal effect']||'').split(', ').filter(function(x){return x})); centangKotak('f-kendala',(fk['Kendala berhenti']||'').split(', ').filter(function(x){return x})); setNilai('f-kebiasaan',fk['Kebiasaan yang menjadi kendala']); setPilih('f-metode',fk['Metode yang digunakan']); var btM=(fk['Batang yang dikonsumsi bila masih merokok']||'').match(/(\d+)/); if(btM) setNilai('f-batang',btM[1]);
+  var ft=uraiFU4Tindak(pt2.fu); centangKotak('f-langkah',(ft['Langkah yang diambil']||'').split('; ').filter(function(x){return x})); setNilai('f-rencana',ft['Rencana/saran yang diberikan']); setPilih('f-simpulan',ft['Kesimpulan follow up']); setNilai('f-akan',ft['Akan berhenti pada tanggal']); setNilai('f-tidak-yakin',ft['Tidak yakin, alasan']);
+  if(pen.konselor) setPilih('m-konselor',pen.konselor);
+  if(pen.motivasi){ centangRadio('m-mot-pilih',pen.motivasi); document.getElementById('m-mot-val').textContent=pen.motivasi; var catM=(pen.motAlasan||'').match(/\. Catatan: (.+)$/); if(catM) setNilai('m-mot-alasan',catM[1]); document.getElementById('m-mot-box').classList.remove('hidden'); document.getElementById('m-mot-btn').textContent='Sembunyikan Form Skala Motivasi'; }
+  document.getElementById('modal-fu-judul').textContent='Edit Konseling / Follow Up: '+k.values[3];
+  document.getElementById('mode-edit-m').classList.remove('hidden');
+  document.getElementById('modal-fu').classList.remove('hidden');
+}
+
 var editRow=null;
 function bukaEditRiwayat(row){
   var r=DATA.konseling.find(function(x){return x.row===row}); if(!r) return;
-  editRow=row;
-  document.getElementById('e-tgl').value=r.values[2]||'';
-  document.getElementById('e-jenis').value=r.values[3]||'Konseling 1';
-  document.getElementById('e-status').value=r.values[4]||'';
-  document.getElementById('e-co').value=r.values[5]===''||r.values[5]===null?'':r.values[5];
-  document.getElementById('e-co-interp').textContent=r.values[5]===''||r.values[5]===null?'':coInterpretasi(Number(r.values[5]));
-  document.getElementById('e-bb').value=r.values[6]===''||r.values[6]===null?'':r.values[6];
-  document.getElementById('e-td').value=r.values[7]||'';
-  document.getElementById('e-kendala').value=r.values[8]||'';
-  document.getElementById('e-tindak').value=r.values[9]||'';
-  document.getElementById('modal-edit').classList.remove('hidden');
+  if(String(r.values[3])==='Konseling 1'){ isiFormAwalDariRiwayat(r); } else { isiFormFUDariRiwayat(r); }
 }
 function simpanEditRiwayat(e){ e.preventDefault(); if(!editRow) return false;
   var o={row:editRow, tanggal:document.getElementById('e-tgl').value, jenis:document.getElementById('e-jenis').value, statusMerokok:document.getElementById('e-status').value, co:document.getElementById('e-co').value, bb:document.getElementById('e-bb').value, td:document.getElementById('e-td').value, kendala:document.getElementById('e-kendala').value, tindak:document.getElementById('e-tindak').value};
@@ -814,18 +865,20 @@ function bukaFU(row){
   if(!klienTerpilih) return;
   var r=DATA.konseling.find(function(x){return x.row===row});
   var fu=r?cariFU(klienTerpilih.values[2], r.values[2]):null;
+  editRow=null; editLama=null; document.getElementById('mode-edit-m').classList.add('hidden'); resetFormFU();
   document.getElementById('modal-fu-judul').textContent='Follow Up: '+klienTerpilih.values[3];
   document.getElementById('m-tgl').value=fu?fu.values[0]:todayStr();
   document.getElementById('modal-fu').classList.remove('hidden');
 }
 function simpanFUModal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return false}
-  var fagB=''; if(!document.getElementById('m-fag-box').classList.contains('hidden')){ var mf=hitungMFag(); if(!mf.lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false} fagB=mf.total; }
+  var fagB=''; if(!document.getElementById('m-fag-box').classList.contains('hidden')){ var mf=hitungMFag(); if(!mf.lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false} fagB=mf.total; } if(fagB==='' && editRow && editLama && editLama.fagScore){ fagB=editLama.fagScore; }
   var motPilihM=document.querySelector('input[name="m-mot-pilih"]:checked');
   var motB=document.getElementById('m-mot-box').classList.contains('hidden') ? '' : (motPilihM?motPilihM.value:'');
   var motA=(document.getElementById('m-mot-box').classList.contains('hidden')||!motPilihM) ? '' : ('Motivasi '+motPilihM.value+'/10 \u2014 Pernyataan: '+motPernyataan(motPilihM.value)+(document.getElementById('m-mot-alasan').value?'. Catatan: '+document.getElementById('m-mot-alasan').value:''));
+  if(motB==='' && editRow && editLama && editLama.motivasi){ motB=editLama.motivasi; motA=editLama.motAlasan||motA; }
   var fu4=fu4Text();
   var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('m-tgl').value, jenis:document.getElementById('m-jenis').value, statusMerokok:document.getElementById('m-status').value, co:document.getElementById('m-co').value, bb:document.getElementById('m-bb').value, td:document.getElementById('m-td').value, kendala:document.getElementById('m-kendala').value+(fu4.kendala?' | '+fu4.kendala:''), tindak:document.getElementById('m-tindak').value+(fu4.tindak?' | '+fu4.tindak:''), konselor:document.getElementById('m-konselor').value||'', skorFagerstrom:fagB, motivasi:motB, motAlasan:motA, jenisRokok:'', vapeInfo:''};
-  run('saveKonseling',o,function(){showMsg('Catatan konseling/FU tersimpan.','ok'); tutupModal('modal-fu'); muat()}); return false }
+  if(editRow){ var pen=[]; if(o.skorFagerstrom!==''&&o.skorFagerstrom!==null&&o.skorFagerstrom!==undefined) pen.push('Fagerstrom '+o.skorFagerstrom+' ('+labelFagBackend(o.skorFagerstrom)+')'); if(o.motivasi!==''&&o.motivasi!==null&&o.motivasi!==undefined) pen.push('Motivasi '+o.motivasi+'/10'); if(o.motAlasan) pen.push('Alasan motivasi: '+o.motAlasan); if(o.konselor) pen.push('Konselor: '+o.konselor); var tindakFinal=o.tindak; if(pen.length) tindakFinal=(tindakFinal?tindakFinal+' | ':'')+'Penilaian: '+pen.join('; '); run('updateKonselingRow',{row:editRow,tanggal:o.tanggal,jenis:o.jenis,statusMerokok:o.statusMerokok,co:o.co,bb:o.bb,td:o.td,kendala:o.kendala,tindak:tindakFinal},function(){showMsg('Riwayat berhasil diubah.','ok'); document.getElementById('mode-edit-m').classList.add('hidden'); tutupModal('modal-fu'); editRow=null; editLama=null; muat()}); } else { run('saveKonseling',o,function(){showMsg('Catatan konseling/FU tersimpan.','ok'); tutupModal('modal-fu'); muat()}); } return false }
 var KONSELOR_DEFAULT=['dr. Abdi Azhim Zauli Azra','Hj. Nurainun, S.Kep, Ners','Imanda Lestari, SKM'];
 function daftarKonselor(){ var out=KONSELOR_DEFAULT.slice(); if(DATA&&DATA.konselor){ DATA.konselor.forEach(function(r){ var n=String(r.values[0]||'').trim(); if(n&&out.indexOf(n)<0) out.push(n); }); } return out; }
 function isiKonselor(){ ['a-konselor','m-konselor'].forEach(function(id){ var sel=document.getElementById(id); if(!sel) return; var cur=sel.value; sel.innerHTML=daftarKonselor().map(function(n){return '<option>'+esc(n)+'</option>'}).join('')+'<option value="__baru__">+ Tambah konselor baru&hellip;</option>'; if(cur&&cur!=='__baru__') sel.value=cur; }); }
@@ -936,10 +989,10 @@ function simpanKlien(e){ e.preventDefault();
   run('saveKlien',o,function(){showMsg('Klien tersimpan. Buka klien itu dari Daftar Klien lalu tekan Pemeriksaan untuk konseling awal.','ok'); tutupModal('modal-baru'); var f=document.getElementById('form-baru'); if(f) f.reset(); muat()}); return false }
 function vapeInfo(prefix){ var jenis=document.getElementById(prefix+'-jenis').value||''; if(jenis.indexOf('elektronik')<0 && jenis.indexOf('Keduanya')<0) return ''; return 'Perangkat: '+(document.getElementById(prefix+'-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById(prefix+'-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById(prefix+'-vape-frek').value||'-')+'; Pernyataan: '+(document.getElementById(prefix+'-vape-nyata').value||'-'); }
 function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return false}
-  if(pertamaTerkunci()){showMsg('Konseling 1 sudah dilakukan untuk klien ini, jadi tidak bisa disimpan lagi.','err'); return false}
+  if(!editRow && pertamaTerkunci()){showMsg('Konseling 1 sudah dilakukan untuk klien ini, jadi tidak bisa disimpan lagi.','err'); return false}
   var fagTotal=hitungFag(); var lengkap=true; for(var i=1;i<=6;i++){ if(!document.querySelector('input[name="fag'+i+'"]:checked')) lengkap=false; }
-  if(!lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false}
-  var motPilih=document.querySelector('input[name="a-mot-pilih"]:checked'); if(!motPilih){showMsg('Pilih satu pernyataan Kuesioner Skala Motivasi dulu.','err'); return false}
+  if(!lengkap && editRow && editLama && editLama.fagScore){ fagTotal=Number(editLama.fagScore); lengkap=true; } if(!lengkap){showMsg('Lengkapi 6 pertanyaan checklist Fagerstrom dulu.','err'); return false}
+  var motPilih=document.querySelector('input[name="a-mot-pilih"]:checked'); if(!motPilih && editRow && editLama && editLama.motivasi){ var _rm=document.querySelector('input[name="a-mot-pilih"][value="'+editLama.motivasi+'"]'); if(_rm){ _rm.checked=true; var _cm=(editLama.motAlasan||'').match(/\. Catatan: (.+)$/); if(_cm) document.getElementById('a-mot-alasan').value=_cm[1]; } motPilih=document.querySelector('input[name="a-mot-pilih"]:checked'); } if(!motPilih){showMsg('Pilih satu pernyataan Kuesioner Skala Motivasi dulu.','err'); return false}
   var kurang=[];
   function perlu(id,label){ if(!val(id)) kurang.push(label); }
   perlu('a-tgl','Tanggal konseling awal');
@@ -972,11 +1025,11 @@ function simpanAwal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka kli
   var vapeA='';
   if(jenisA.indexOf('elektronik')>=0 || jenisA.indexOf('Keduanya')>=0){
     var ps=hitungPS();
-    if(!ps.lengkap){showMsg('Lengkapi kuesioner Penn State untuk rokok elektronik dulu (10 pertanyaan).','err'); return false}
-    vapeA='Penn State ECDI skor '+ps.total+'/20 ('+psLabel(ps.total)+') ['+psJawaban()+']. Perangkat: '+(document.getElementById('a-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById('a-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById('a-vape-frek').value||'-')+'; Catatan: '+(document.getElementById('a-vape-nyata').value||'-');
+    if(!ps.lengkap && editRow && editLama && editLama.vapeInfo){ vapeA=editLama.vapeInfo; } else if(!ps.lengkap){showMsg('Lengkapi kuesioner Penn State untuk rokok elektronik dulu (10 pertanyaan).','err'); return false}
+    if(!vapeA) vapeA='Penn State ECDI skor '+ps.total+'/20 ('+psLabel(ps.total)+') ['+psJawaban()+']. Perangkat: '+(document.getElementById('a-vape-alat').value||'-')+'; Kadar nikotin: '+(document.getElementById('a-vape-nik').value||'-')+'; Frekuensi: '+(document.getElementById('a-vape-frek').value||'-')+'; Catatan: '+(document.getElementById('a-vape-nyata').value||'-');
   }
   var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('a-tgl').value, batangPerHari:document.getElementById('a-batang').value, usiaMulai:document.getElementById('a-usia').value, jenisRokok:jenisA, vapeInfo:vapeA, skorFagerstrom:fagTotal, motivasi:motPilih.value, motAlasan:'Motivasi '+motPilih.value+'/10 \u2014 Pernyataan: '+motPernyataan(motPilih.value)+(document.getElementById('a-mot-alasan').value?'. Catatan: '+document.getElementById('a-mot-alasan').value:''), tahap:document.getElementById('a-tahap').value, tanggalBerhenti:document.getElementById('a-berhenti').value, metode:document.getElementById('a-metode').value, dukungan:document.getElementById('a-dukung').value, konselor:document.getElementById('a-konselor').value||'', co:val('a-co'), bb:val('a-bb'), td:val('a-td'), statusAwal:statusAwalText()};
-  run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui.','ok'); tutupModal('modal-konseling'); muat()}); return false }
+  if(editRow){ var rt=ringkasAwalDariO(o); run('updateKonselingRow',{row:editRow,tanggal:o.tanggal,jenis:'Konseling 1',statusMerokok:'Masih merokok',co:o.co,bb:o.bb,td:o.td,kendala:rt.kendala,tindak:rt.tindak},function(){showMsg('Riwayat Konseling 1 berhasil diubah.','ok'); document.getElementById('mode-edit-a').classList.add('hidden'); tutupModal('modal-konseling'); editRow=null; editLama=null; muat()}); } else { run('saveKonselingAwal',o,function(){showMsg('Konseling awal (Konseling 1) tersimpan dan data klien diperbarui.','ok'); tutupModal('modal-konseling'); muat()}); } return false }
 function ubahStatus(){ if(!klienTerpilih){showMsg('Buka klien dari Daftar Klien lalu tekan Pemeriksaan.','err'); return}
   run('updateKlienStatus',{nik:klienTerpilih.values[2], status:document.getElementById('s-status').value},function(){showMsg('Status klien diperbarui.','ok'); muat()}) }
 function renderJadwalKlien(){
