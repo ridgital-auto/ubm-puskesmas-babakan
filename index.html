@@ -170,29 +170,29 @@
         </div>
         <button class="btn2" type="button" id="m-fag-btn" onclick="toggleForm('m-fag-box','m-fag-btn','Form Fagerstrom')">Tampilkan Form Fagerstrom</button>
         <div id="m-fag-box" class="hidden">
-          <p><b>Checklist Fagerstrom (6 pertanyaan standar &mdash; pilih satu jawaban per pertanyaan):</b></p>
-          <div class="fag-q"><p>1. Berapa lama setelah bangun tidur klien merokok pertama kali?</p>
-            <label class="fag-opt"><input type="radio" name="mfag1" value="3" onchange="hitungMFag()"> Dalam 5 menit (3)</label>
-            <label class="fag-opt"><input type="radio" name="mfag1" value="2" onchange="hitungMFag()"> 6&ndash;30 menit (2)</label>
-            <label class="fag-opt"><input type="radio" name="mfag1" value="1" onchange="hitungMFag()"> 31&ndash;60 menit (1)</label>
-            <label class="fag-opt"><input type="radio" name="mfag1" value="0" onchange="hitungMFag()"> Setelah 60 menit (0)</label></div>
-          <div class="fag-q"><p>2. Apakah sulit menahan diri tidak merokok di tempat yang dilarang merokok?</p>
-            <label class="fag-opt"><input type="radio" name="mfag2" value="1" onchange="hitungMFag()"> Ya (1)</label>
-            <label class="fag-opt"><input type="radio" name="mfag2" value="0" onchange="hitungMFag()"> Tidak (0)</label></div>
-          <div class="fag-q"><p>3. Rokok mana yang paling sulit ditinggalkan?</p>
-            <label class="fag-opt"><input type="radio" name="mfag3" value="1" onchange="hitungMFag()"> Rokok pertama di pagi hari (1)</label>
-            <label class="fag-opt"><input type="radio" name="mfag3" value="0" onchange="hitungMFag()"> Rokok lainnya (0)</label></div>
-          <div class="fag-q"><p>4. Berapa batang rokok per hari?</p>
-            <label class="fag-opt"><input type="radio" name="mfag4" value="0" onchange="hitungMFag()"> 10 batang atau kurang (0)</label>
-            <label class="fag-opt"><input type="radio" name="mfag4" value="1" onchange="hitungMFag()"> 11&ndash;20 batang (1)</label>
-            <label class="fag-opt"><input type="radio" name="mfag4" value="2" onchange="hitungMFag()"> 21&ndash;30 batang (2)</label>
-            <label class="fag-opt"><input type="radio" name="mfag4" value="3" onchange="hitungMFag()"> 31 batang atau lebih (3)</label></div>
-          <div class="fag-q"><p>5. Apakah klien lebih sering merokok pada jam-jam pertama setelah bangun daripada sepanjang hari?</p>
-            <label class="fag-opt"><input type="radio" name="mfag5" value="1" onchange="hitungMFag()"> Ya (1)</label>
-            <label class="fag-opt"><input type="radio" name="mfag5" value="0" onchange="hitungMFag()"> Tidak (0)</label></div>
-          <div class="fag-q"><p>6. Apakah klien tetap merokok meskipun sakit hingga harus berbaring di tempat tidur hampir sepanjang hari?</p>
-            <label class="fag-opt"><input type="radio" name="mfag6" value="1" onchange="hitungMFag()"> Ya (1)</label>
-            <label class="fag-opt"><input type="radio" name="mfag6" value="0" onchange="hitungMFag()"> Tidak (0)</label></div>
+          <p><b>Kuesioner Adiksi Nikotin Fagerstrom (Lampiran 2) &mdash; pilih satu jawaban per pertanyaan:</b></p>
+          <div class="fag-q"><p>1. Berapa banyak rokok yang anda hisap dalam satu hari?</p>
+            <label class="fag-opt"><input type="radio" name="mfag1" value="0" onchange="hitungMFag()"> 1-10 (0)</label>
+            <label class="fag-opt"><input type="radio" name="mfag1" value="1" onchange="hitungMFag()"> 11-20 (1)</label>
+            <label class="fag-opt"><input type="radio" name="mfag1" value="2" onchange="hitungMFag()"> 21-30 (2)</label>
+            <label class="fag-opt"><input type="radio" name="mfag1" value="3" onchange="hitungMFag()"> 31 atau lebih (3)</label></div>
+          <div class="fag-q"><p>2. Seberapa cepat anda menyalakan rokok pertama anda setelah anda terjaga?</p>
+            <label class="fag-opt"><input type="radio" name="mfag2" value="3" onchange="hitungMFag()"> Dalam 5 menit (3)</label>
+            <label class="fag-opt"><input type="radio" name="mfag2" value="2" onchange="hitungMFag()"> 6 hingga 30 menit (2)</label>
+            <label class="fag-opt"><input type="radio" name="mfag2" value="1" onchange="hitungMFag()"> 31 hingga 60 menit (1)</label>
+            <label class="fag-opt"><input type="radio" name="mfag2" value="0" onchange="hitungMFag()"> Setelah 60 menit (0)</label></div>
+          <div class="fag-q"><p>3. Rokok mana yang paling anda tidak relakan untuk dihentikan?</p>
+            <label class="fag-opt"><input type="radio" name="mfag3" value="1" onchange="hitungMFag()"> Rokok pertama pada pagi hari (1)</label>
+            <label class="fag-opt"><input type="radio" name="mfag3" value="0" onchange="hitungMFag()"> Lainnya (0)</label></div>
+          <div class="fag-q"><p>4. Apakah anda merokok lebih banyak dalam dua jam pertama hari anda daripada sisa hari anda?</p>
+            <label class="fag-opt"><input type="radio" name="mfag4" value="0" onchange="hitungMFag()"> Tidak (0)</label>
+            <label class="fag-opt"><input type="radio" name="mfag4" value="1" onchange="hitungMFag()"> Ya (1)</label></div>
+          <div class="fag-q"><p>5. Apakah anda kesulitan menahan rasa ingin merokok di tempat yang dilarang seperti bangunan umum, pesawat terbang atau di tempat kerja?</p>
+            <label class="fag-opt"><input type="radio" name="mfag5" value="0" onchange="hitungMFag()"> Tidak (0)</label>
+            <label class="fag-opt"><input type="radio" name="mfag5" value="1" onchange="hitungMFag()"> Ya (1)</label></div>
+          <div class="fag-q"><p>6. Apakah anda masih merokok ketika anda sakit berat sehingga anda harus berbaring dalam sebagian besar waktu anda?</p>
+            <label class="fag-opt"><input type="radio" name="mfag6" value="0" onchange="hitungMFag()"> Tidak (0)</label>
+            <label class="fag-opt"><input type="radio" name="mfag6" value="1" onchange="hitungMFag()"> Ya (1)</label></div>
           <p>Skor Fagerstrom total: <b id="m-fag-total">-</b> &middot; <span id="m-fag-label" class="pill">Lengkapi 6 pertanyaan untuk melihat tingkat adiksi</span></p>
           <button class="btn2" type="button" onclick="resetMFag()">Ulangi Checklist Fagerstrom</button>
         </div>
@@ -273,45 +273,45 @@
         <label>Jenis rokok</label>
         <select id="a-jenis" onchange="toggleVape('a-jenis','a-vape')"><option>Konvensional</option><option>Rokok elektronik (vape)</option><option>Keduanya (konvensional + elektronik)</option><option>Lainnya</option></select>
         <div id="a-vape" class="hidden">
-          <p><b>Kuesioner Penn State untuk Rokok Elektronik (Penn State Electronic Cigarette Dependence Index, 10 pertanyaan &mdash; pilih satu jawaban per pertanyaan, skor dan interpretasi muncul otomatis):</b></p>
-          <div class="fag-q"><p>PS1. Berapa kali per hari biasanya memakai rokok elektronik? (1 kali &asymp; 15 hisapan / 10 menit)</p>
+          <p><b>Kuesioner Penn State untuk Rokok Elektronik (Lampiran 7, Penn State Electronic Cigarette Dependence Index, 10 pertanyaan &mdash; pilih satu jawaban per pertanyaan, skor dan interpretasi muncul otomatis):</b></p>
+          <div class="fag-q"><p>PS1. Berapa kali dalam sehari biasanya anda menggunakan rokok elektronik? (1 kali penggunaan = 15 hisapan/embusan atau sekitar 10 menit)</p>
             <label class="fag-opt"><input type="radio" name="ps1" value="0" onchange="hitungPS()"> 0&ndash;4 kali (0)</label>
             <label class="fag-opt"><input type="radio" name="ps1" value="1" onchange="hitungPS()"> 5&ndash;9 kali (1)</label>
             <label class="fag-opt"><input type="radio" name="ps1" value="2" onchange="hitungPS()"> 10&ndash;14 kali (2)</label>
             <label class="fag-opt"><input type="radio" name="ps1" value="3" onchange="hitungPS()"> 15&ndash;19 kali (3)</label>
             <label class="fag-opt"><input type="radio" name="ps1" value="4" onchange="hitungPS()"> 20&ndash;29 kali (4)</label>
             <label class="fag-opt"><input type="radio" name="ps1" value="5" onchange="hitungPS()"> 30 kali atau lebih (5)</label></div>
-          <div class="fag-q"><p>PS2. Pada hari bebas memakai, berapa lama setelah bangun tidur pertama kali memakai rokok elektronik?</p>
+          <div class="fag-q"><p>PS2. Pada hari-hari dimana anda dapat menggunakan rokok elektronik secara bebas, berapa lama sejak anda bangun tidur hingga penggunaan pertama rokok elektronik anda?</p>
             <label class="fag-opt"><input type="radio" name="ps2" value="5" onchange="hitungPS()"> 0&ndash;5 menit (5)</label>
             <label class="fag-opt"><input type="radio" name="ps2" value="4" onchange="hitungPS()"> 6&ndash;15 menit (4)</label>
             <label class="fag-opt"><input type="radio" name="ps2" value="3" onchange="hitungPS()"> 16&ndash;30 menit (3)</label>
             <label class="fag-opt"><input type="radio" name="ps2" value="2" onchange="hitungPS()"> 31&ndash;60 menit (2)</label>
             <label class="fag-opt"><input type="radio" name="ps2" value="1" onchange="hitungPS()"> 61&ndash;120 menit (1)</label>
             <label class="fag-opt"><input type="radio" name="ps2" value="0" onchange="hitungPS()"> 121 menit atau lebih (0)</label></div>
-          <div class="fag-q"><p>PS3. Apakah kadang terbangun di malam hari untuk memakai rokok elektronik?</p>
+          <div class="fag-q"><p>PS3. Apakah anda kadang terbangun dimalam hari untuk menggunakan rokok elektronik?</p>
             <label class="fag-opt"><input type="radio" name="ps3" value="1" onchange="hitungPS();togglePS4()"> Ya (1)</label>
             <label class="fag-opt"><input type="radio" name="ps3" value="0" onchange="hitungPS();togglePS4()"> Tidak (0)</label></div>
-          <div class="fag-q hidden" id="a-ps4-box"><p>PS4. Jika ya, berapa malam per minggu biasanya terbangun untuk memakai?</p>
+          <div class="fag-q hidden" id="a-ps4-box"><p>PS4. Jika anda menjawab 'ya', berapa kali dalam seminggu anda biasanya terbangun malam untuk menggunakan rokok elektronik?</p>
             <label class="fag-opt"><input type="radio" name="ps4" value="0" onchange="hitungPS()"> 0&ndash;1 malam (0)</label>
             <label class="fag-opt"><input type="radio" name="ps4" value="1" onchange="hitungPS()"> 2&ndash;3 malam (1)</label>
             <label class="fag-opt"><input type="radio" name="ps4" value="2" onchange="hitungPS()"> 4 malam atau lebih (2)</label></div>
-          <div class="fag-q"><p>PS5. Apakah memakai rokok elektronik sekarang karena sangat sulit berhenti?</p>
+          <div class="fag-q"><p>PS5. Apakah saat ini anda menggunakan rokok elektronik karena sulit untuk berhenti menggunakannya?</p>
             <label class="fag-opt"><input type="radio" name="ps5" value="1" onchange="hitungPS()"> Ya (1)</label>
             <label class="fag-opt"><input type="radio" name="ps5" value="0" onchange="hitungPS()"> Tidak (0)</label></div>
-          <div class="fag-q"><p>PS6. Apakah pernah merasa keinginan kuat (craving) untuk memakai rokok elektronik?</p>
+          <div class="fag-q"><p>PS6. Apakah anda memiliki keinginan yang kuat untuk menggunakan rokok elektronik?</p>
             <label class="fag-opt"><input type="radio" name="ps6" value="1" onchange="hitungPS()"> Ya (1)</label>
             <label class="fag-opt"><input type="radio" name="ps6" value="0" onchange="hitungPS()"> Tidak (0)</label></div>
-          <div class="fag-q"><p>PS7. Selama seminggu terakhir, seberapa kuat dorongan memakai rokok elektronik?</p>
-            <label class="fag-opt"><input type="radio" name="ps7" value="0" onchange="hitungPS()"> Tidak ada / ringan (0)</label>
-            <label class="fag-opt"><input type="radio" name="ps7" value="1" onchange="hitungPS()"> Sedang / kuat (1)</label>
-            <label class="fag-opt"><input type="radio" name="ps7" value="2" onchange="hitungPS()"> Sangat kuat / amat sangat kuat (2)</label></div>
-          <div class="fag-q"><p>PS8. Apakah sulit menahan diri tidak memakai rokok elektronik di tempat yang tidak diperbolehkan?</p>
+          <div class="fag-q"><p>PS7. Dalam beberapa minggu terakhir, seberapa kuat dorongan untuk menggunakan rokok elektronik?</p>
+            <label class="fag-opt"><input type="radio" name="ps7" value="0" onchange="hitungPS()"> Tidak / ringan (0)</label>
+            <label class="fag-opt"><input type="radio" name="ps7" value="1" onchange="hitungPS()"> Menengah / kuat (1)</label>
+            <label class="fag-opt"><input type="radio" name="ps7" value="2" onchange="hitungPS()"> Sangat kuat / terlalu kuat (2)</label></div>
+          <div class="fag-q"><p>PS8. Apakah sulit untuk menahan tidak menggunakan rokok elektronik pada tempat-tempat yang tidak seharusnya?</p>
             <label class="fag-opt"><input type="radio" name="ps8" value="1" onchange="hitungPS()"> Ya (1)</label>
             <label class="fag-opt"><input type="radio" name="ps8" value="0" onchange="hitungPS()"> Tidak (0)</label></div>
-          <div class="fag-q"><p>PS9. Saat lama tidak memakai atau saat mencoba berhenti, apakah merasa lebih mudah tersinggung karena tidak bisa memakai?</p>
+          <div class="fag-q"><p>PS9. Apakah anda merasa resah / tidak nyaman bila tidak dapat menggunakan rokok elektronik?</p>
             <label class="fag-opt"><input type="radio" name="ps9" value="1" onchange="hitungPS()"> Ya (1)</label>
             <label class="fag-opt"><input type="radio" name="ps9" value="0" onchange="hitungPS()"> Tidak (0)</label></div>
-          <div class="fag-q"><p>PS10. Saat lama tidak memakai atau saat mencoba berhenti, apakah merasa gugup, gelisah, atau cemas karena tidak bisa memakai?</p>
+          <div class="fag-q"><p>PS10. Apakah anda merasa gugup, cepat lelah, dan cemas karena tidak dapat menggunakan rokok elektronik?</p>
             <label class="fag-opt"><input type="radio" name="ps10" value="1" onchange="hitungPS()"> Ya (1)</label>
             <label class="fag-opt"><input type="radio" name="ps10" value="0" onchange="hitungPS()"> Tidak (0)</label></div>
           <p>Skor Penn State ECDI total: <b id="a-ps-total">-</b> &middot; <span id="a-ps-label" class="pill">Lengkapi 10 pertanyaan untuk melihat tingkat dependensi</span></p>
@@ -323,33 +323,33 @@
           </div>
           <label>Catatan tambahan rokok elektronik</label><textarea id="a-vape-nyata" placeholder="Catatan bebas bila ada."></textarea>
         </div>
-        <p><b>Checklist Fagerstrom (Fagerstrom Test for Nicotine Dependence, 6 pertanyaan standar &mdash; pilih satu jawaban per pertanyaan, skor dan interpretasi muncul otomatis):</b></p>
-        <div class="fag-q"><p>1. Berapa lama setelah bangun tidur klien merokok pertama kali?</p>
-          <label class="fag-opt"><input type="radio" name="fag1" value="3" onchange="hitungFag()"> Dalam 5 menit (3)</label>
-          <label class="fag-opt"><input type="radio" name="fag1" value="2" onchange="hitungFag()"> 6&ndash;30 menit (2)</label>
-          <label class="fag-opt"><input type="radio" name="fag1" value="1" onchange="hitungFag()"> 31&ndash;60 menit (1)</label>
-          <label class="fag-opt"><input type="radio" name="fag1" value="0" onchange="hitungFag()"> Setelah 60 menit (0)</label></div>
-        <div class="fag-q"><p>2. Apakah sulit menahan diri tidak merokok di tempat yang dilarang merokok?</p>
-          <label class="fag-opt"><input type="radio" name="fag2" value="1" onchange="hitungFag()"> Ya (1)</label>
-          <label class="fag-opt"><input type="radio" name="fag2" value="0" onchange="hitungFag()"> Tidak (0)</label></div>
-        <div class="fag-q"><p>3. Rokok mana yang paling sulit ditinggalkan?</p>
-          <label class="fag-opt"><input type="radio" name="fag3" value="1" onchange="hitungFag()"> Rokok pertama di pagi hari (1)</label>
-          <label class="fag-opt"><input type="radio" name="fag3" value="0" onchange="hitungFag()"> Rokok lainnya (0)</label></div>
-        <div class="fag-q"><p>4. Berapa batang rokok per hari? (sesuaikan dengan batang per hari di atas)</p>
-          <label class="fag-opt"><input type="radio" name="fag4" value="0" onchange="hitungFag()"> 10 batang atau kurang (0)</label>
-          <label class="fag-opt"><input type="radio" name="fag4" value="1" onchange="hitungFag()"> 11&ndash;20 batang (1)</label>
-          <label class="fag-opt"><input type="radio" name="fag4" value="2" onchange="hitungFag()"> 21&ndash;30 batang (2)</label>
-          <label class="fag-opt"><input type="radio" name="fag4" value="3" onchange="hitungFag()"> 31 batang atau lebih (3)</label></div>
-        <div class="fag-q"><p>5. Apakah klien lebih sering merokok pada jam-jam pertama setelah bangun daripada sepanjang hari?</p>
-          <label class="fag-opt"><input type="radio" name="fag5" value="1" onchange="hitungFag()"> Ya (1)</label>
-          <label class="fag-opt"><input type="radio" name="fag5" value="0" onchange="hitungFag()"> Tidak (0)</label></div>
-        <div class="fag-q"><p>6. Apakah klien tetap merokok meskipun sakit hingga harus berbaring di tempat tidur hampir sepanjang hari?</p>
-          <label class="fag-opt"><input type="radio" name="fag6" value="1" onchange="hitungFag()"> Ya (1)</label>
-          <label class="fag-opt"><input type="radio" name="fag6" value="0" onchange="hitungFag()"> Tidak (0)</label></div>
+        <p><b>Kuesioner Adiksi Nikotin Fagerstrom (Lampiran 2) &mdash; pilih satu jawaban per pertanyaan, skor dan interpretasi muncul otomatis:</b></p>
+        <div class="fag-q"><p>1. Berapa banyak rokok yang anda hisap dalam satu hari?</p>
+            <label class="fag-opt"><input type="radio" name="fag1" value="0" onchange="hitungFag()"> 1-10 (0)</label>
+            <label class="fag-opt"><input type="radio" name="fag1" value="1" onchange="hitungFag()"> 11-20 (1)</label>
+            <label class="fag-opt"><input type="radio" name="fag1" value="2" onchange="hitungFag()"> 21-30 (2)</label>
+            <label class="fag-opt"><input type="radio" name="fag1" value="3" onchange="hitungFag()"> 31 atau lebih (3)</label></div>
+        <div class="fag-q"><p>2. Seberapa cepat anda menyalakan rokok pertama anda setelah anda terjaga?</p>
+            <label class="fag-opt"><input type="radio" name="fag2" value="3" onchange="hitungFag()"> Dalam 5 menit (3)</label>
+            <label class="fag-opt"><input type="radio" name="fag2" value="2" onchange="hitungFag()"> 6 hingga 30 menit (2)</label>
+            <label class="fag-opt"><input type="radio" name="fag2" value="1" onchange="hitungFag()"> 31 hingga 60 menit (1)</label>
+            <label class="fag-opt"><input type="radio" name="fag2" value="0" onchange="hitungFag()"> Setelah 60 menit (0)</label></div>
+        <div class="fag-q"><p>3. Rokok mana yang paling anda tidak relakan untuk dihentikan?</p>
+            <label class="fag-opt"><input type="radio" name="fag3" value="1" onchange="hitungFag()"> Rokok pertama pada pagi hari (1)</label>
+            <label class="fag-opt"><input type="radio" name="fag3" value="0" onchange="hitungFag()"> Lainnya (0)</label></div>
+        <div class="fag-q"><p>4. Apakah anda merokok lebih banyak dalam dua jam pertama hari anda daripada sisa hari anda?</p>
+            <label class="fag-opt"><input type="radio" name="fag4" value="0" onchange="hitungFag()"> Tidak (0)</label>
+            <label class="fag-opt"><input type="radio" name="fag4" value="1" onchange="hitungFag()"> Ya (1)</label></div>
+        <div class="fag-q"><p>5. Apakah anda kesulitan menahan rasa ingin merokok di tempat yang dilarang seperti bangunan umum, pesawat terbang atau di tempat kerja?</p>
+            <label class="fag-opt"><input type="radio" name="fag5" value="0" onchange="hitungFag()"> Tidak (0)</label>
+            <label class="fag-opt"><input type="radio" name="fag5" value="1" onchange="hitungFag()"> Ya (1)</label></div>
+        <div class="fag-q"><p>6. Apakah anda masih merokok ketika anda sakit berat sehingga anda harus berbaring dalam sebagian besar waktu anda?</p>
+            <label class="fag-opt"><input type="radio" name="fag6" value="0" onchange="hitungFag()"> Tidak (0)</label>
+            <label class="fag-opt"><input type="radio" name="fag6" value="1" onchange="hitungFag()"> Ya (1)</label></div>
         <p>Skor Fagerstrom total: <b id="a-fag-total">-</b> &middot; <span id="a-fag-label" class="pill">Lengkapi 6 pertanyaan untuk melihat tingkat adiksi</span></p>
         <input type="hidden" id="a-fag" value="">
         <button class="btn2" type="button" onclick="resetFag()">Ulangi Checklist Fagerstrom</button>
-        <p class="muted">Interpretasi sesuai modul UBM: &lt;5 rendah, =5 moderat, &gt;5 tinggi. Farmakologi dibahas dengan dokter bila skor &gt;5; nonfarmakologi diutamakan. Untuk pengguna vape saja, isi checklist berdasarkan rokok konvensional bila masih merokok, dan lengkapi pernyataan vape di atas.</p>
+        <p class="muted">Interpretasi (Lampiran 2): 0-3 ketergantungan rendah, 4-6 sedang, 7-10 tinggi. Farmakologi dibahas dengan dokter bila skor &gt;5; nonfarmakologi diutamakan. Untuk pengguna vape saja, isi checklist berdasarkan rokok konvensional bila masih merokok, dan lengkapi pernyataan vape di atas.</p>
       </div>
       <button class="btn2" type="button" id="a-mot-btn" onclick="toggleForm('a-mot-box','a-mot-btn','Form Skala Motivasi')">Sembunyikan Form Skala Motivasi</button>
       <div id="a-mot-box">
@@ -386,7 +386,7 @@ var DATA={klien:[],konseling:[],jadwal:[]};
 var klienTerpilih=null;
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function showMsg(html,cls){document.getElementById('msg').innerHTML='<div class="'+cls+'">'+html+'</div>'; window.scrollTo(0,0)}
-function fagLabel(v){v=Number(v); if(isNaN(v)) return 'Isi skor untuk melihat tingkat adiksi'; if(v<5) return 'Rendah (<5)'; if(v===5) return 'Moderat (=5)'; return 'Tinggi (>5)'}
+function fagLabel(v){v=Number(v); if(isNaN(v)) return 'Isi skor untuk melihat tingkat adiksi'; if(v<=3) return 'Rendah (0-3)'; if(v<=6) return 'Sedang (4-6)'; return 'Tinggi (7-10)'}
 function maskNik(nik){nik=String(nik||''); return nik.length>4 ? '****'+nik.slice(-4) : nik}
 function hariIndo(d){var h=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; return h[new Date(d+'T00:00:00').getDay()]}
 document.querySelectorAll('#main-nav button').forEach(function(b){b.onclick=function(){
@@ -535,7 +535,7 @@ function hitungFag(){
   return total;
 }
 function motInterp(v){ v=Number(v); if(v===0) return 'Tanpa motivasi sama sekali.'; if(v===10) return 'Sangat termotivasi.'; return 'Skor '+v+'/10.'; }
-function psLabel(total){ if(total<=3) return 'Tidak dependen (0-3)'; if(total<=8) return 'Dependensi rendah (4-8)'; if(total<=12) return 'Dependensi sedang (9-12)'; return 'Dependensi tinggi (13+)'; }
+function psLabel(total){ if(total<=3) return 'Tidak tergantung (0-3)'; if(total<=8) return 'Ketergantungan ringan (4-8)'; if(total<=12) return 'Ketergantungan sedang (9-12)'; return 'Ketergantungan berat (13+)'; }
 function togglePS4(){ var c=document.querySelector('input[name="ps3"]:checked'); var box=document.getElementById('a-ps4-box'); if(!box) return; if(!c||c.value!=='1'){ box.classList.add('hidden'); document.querySelectorAll('input[name="ps4"]').forEach(function(r){r.checked=false}); } else { box.classList.remove('hidden'); } hitungPS(); }
 function hitungPS(){
   var total=0, lengkap=true;
