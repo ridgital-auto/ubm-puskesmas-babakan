@@ -34,6 +34,14 @@
   .fab-klien svg{width:24px;height:24px;fill:none;stroke:#e11d48;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .btn-kembali{width:44px;height:44px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
   .btn-kembali svg{width:24px;height:24px;fill:none;stroke:#e11d48;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .baris-cari-filter{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+  .baris-cari-filter input{flex:1;min-width:120px}
+  .tombol-ikon{width:40px;height:40px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+  .tombol-ikon.aktif{background:#fce7f3}
+  .tombol-ikon svg{width:22px;height:22px;fill:none;stroke:#e11d48;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .menu-filter{position:absolute;right:0;top:46px;background:#fff;border:1px solid #fecdd3;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:60;padding:4px;min-width:140px}
+  .menu-filter button{display:block;width:100%;text-align:left;background:#fff;border:none;padding:8px 10px;cursor:pointer;border-radius:6px}
+  .menu-filter button:hover{background:#fff1f2}
   .modal .card{max-width:680px;width:100%;max-height:92vh;overflow:auto}
   .modal.hidden{display:none}
   .prev-card{border:1px solid #fecdd3;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
@@ -75,11 +83,23 @@
   <section id="tab-klien" class="card hidden">
     <p><button class="btn-kembali" type="button" onclick="tampilBeranda()" title="Beranda" aria-label="Beranda"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></p>
     <h2>Daftar Klien</h2>
-    <p><button class="btn" type="button" onclick="bukaPendaftaranBaru()">+ Klien</button></p>
-    <label>Cari nama / NIK</label>
-    <input id="cari" placeholder="Ketik nama atau NIK..." oninput="filterKlien()">
-    <label>Filter status</label>
-    <select id="filter-status" onchange="filterKlien()">
+    <div class="baris-cari-filter">
+      <button class="tombol-ikon" type="button" onclick="toggleCari()" title="Cari nama" aria-label="Cari nama"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-3.5-3.5"/></svg></button>
+      <input id="cari" class="hidden" placeholder="Ketik nama atau NIK..." oninput="filterKlien()">
+      <span style="position:relative;flex-shrink:0">
+        <button class="tombol-ikon" id="tombol-filter" type="button" onclick="toggleMenuFilter()" title="Filter status" aria-label="Filter status"><svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7v5l-4 2v-7L4 5z"/></svg></button>
+        <div id="menu-filter" class="menu-filter hidden">
+          <button type="button" onclick="pilihFilterStatus('')">Semua</button>
+          <button type="button" onclick="pilihFilterStatus('Aktif')">Aktif</button>
+          <button type="button" onclick="pilihFilterStatus('SUKSES')">SUKSES</button>
+          <button type="button" onclick="pilihFilterStatus('KAMBUH')">KAMBUH</button>
+          <button type="button" onclick="pilihFilterStatus('DO')">DO</button>
+          <button type="button" onclick="pilihFilterStatus('Dirujuk')">Dirujuk</button>
+        </div>
+      </span>
+      <button class="btn" type="button" onclick="bukaPendaftaranBaru()" style="margin-left:auto">+ Klien</button>
+    </div>
+    <select id="filter-status" class="hidden" onchange="filterKlien()">
       <option value="">Semua</option><option>Aktif</option><option>SUKSES</option><option>KAMBUH</option><option>DO</option><option>Dirujuk</option>
     </select>
     <div id="daftar-klien" style="overflow-x:auto"></div>
@@ -601,6 +621,9 @@ function renderStats(){
 }
 var halamanKlien=1;
 function filterKlien(){ halamanKlien=1; renderKlien(); }
+function toggleCari(){ var inp=document.getElementById('cari'); if(inp.classList.contains('hidden')){ inp.classList.remove('hidden'); inp.focus(); } else { inp.value=''; inp.classList.add('hidden'); filterKlien(); } }
+function toggleMenuFilter(){ document.getElementById('menu-filter').classList.toggle('hidden'); }
+function pilihFilterStatus(v){ document.getElementById('filter-status').value=v; document.getElementById('menu-filter').classList.add('hidden'); var tb=document.getElementById('tombol-filter'); if(tb) tb.classList.toggle('aktif', !!v); filterKlien(); }
 function gantiHalamanKlien(d){ halamanKlien+=d; renderKlien(); }
 function renderKlien(){
   var q=(document.getElementById('cari').value||'').toLowerCase();
