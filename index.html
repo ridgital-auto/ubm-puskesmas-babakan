@@ -114,10 +114,7 @@
     </div>
 
     <div id="pk-riwayat">
-      <h3>Ringkasan penilaian</h3>
-      <div id="pk-ringkas"></div>
       <h3>Riwayat konseling &amp; FU</h3>
-      <p class="muted">Riwayat di bawah hanya untuk klien yang sedang dibuka. Tiap kartu adalah preview satu tanggal pemeriksaan. Di dalam kartu ada status follow up, tombol Pemeriksaan untuk detail lengkap tanggal itu, tombol Follow Up, tombol Edit, dan tombol Hapus Riwayat. Status follow up dan jadwal FU tiap tanggal ada di dalam kartunya. Belum berhenti pakai Konseling 1, 2, dst. Sudah berhenti pakai CAR 1, 2, dst (CAR = bulan berhenti terus-menerus).</p>
       <div id="pk-riwayat-tabel" style="overflow-x:auto"></div>
     </div>
 
@@ -579,7 +576,7 @@ function renderRiwayat(){
   if(!klienTerpilih) return;
   var k=klienTerpilih; var nik=k.values[2];
   var riw=DATA.konseling.filter(function(r){return String(r.values[0])===String(nik)});
-  document.getElementById('pk-ringkas').innerHTML='<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16]||'Aktif')+'</b></p><p>'+progresKlien(k)+'</p>';
+  if(document.getElementById('pk-ringkas')) document.getElementById('pk-ringkas').innerHTML='<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16]||'Aktif')+'</b></p><p>'+progresKlien(k)+'</p>';
   renderStatusOptions();
   document.getElementById('pk-riwayat-tabel').innerHTML=riw.length? riw.map(function(r){
     var fu=cariFU(nik, r.values[2]);
