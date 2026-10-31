@@ -32,6 +32,8 @@
   .fab-help{position:fixed;right:12px;top:12px;z-index:50;width:44px;height:44px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;box-shadow:0 2px 8px rgba(0,0,0,.25);font-size:22px;font-weight:bold;cursor:pointer}
   .fab-klien{position:fixed;right:64px;top:12px;z-index:50;width:44px;height:44px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;box-shadow:0 2px 8px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
   .fab-klien svg{width:24px;height:24px;fill:none;stroke:#e11d48;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .btn-kembali{width:44px;height:44px;border-radius:50%;background:#fff;color:#e11d48;border:2px solid #e11d48;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .btn-kembali svg{width:24px;height:24px;fill:none;stroke:#e11d48;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .modal .card{max-width:680px;width:100%;max-height:92vh;overflow:auto}
   .modal.hidden{display:none}
   .prev-card{border:1px solid #fecdd3;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
@@ -71,13 +73,13 @@
   </section>
 
   <section id="tab-klien" class="card hidden">
-    <p><button class="btn2" type="button" onclick="tampilBeranda()">&larr; Beranda</button></p>
+    <p><button class="btn-kembali" type="button" onclick="tampilBeranda()" title="Beranda" aria-label="Beranda"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></p>
     <h2>Daftar Klien</h2>
     <p><button class="btn" type="button" onclick="bukaPendaftaranBaru()">+ Klien</button></p>
     <label>Cari nama / NIK</label>
-    <input id="cari" placeholder="Ketik nama atau NIK..." oninput="renderKlien()">
+    <input id="cari" placeholder="Ketik nama atau NIK..." oninput="filterKlien()">
     <label>Filter status</label>
-    <select id="filter-status" onchange="renderKlien()">
+    <select id="filter-status" onchange="filterKlien()">
       <option value="">Semua</option><option>Aktif</option><option>SUKSES</option><option>KAMBUH</option><option>DO</option><option>Dirujuk</option>
     </select>
     <div id="daftar-klien" style="overflow-x:auto"></div>
@@ -597,13 +599,17 @@ function renderStats(){
   var dekat=DATA.jadwal.filter(function(r){return String(r.values[0])>=now}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}).slice(0,5);
   document.getElementById('jadwal-dekat').innerHTML=dekat.length? '<table><tr><th>Tanggal</th><th>Nama</th><th>Kehadiran</th></tr>'+dekat.map(function(r){return '<tr><td>'+esc(r.values[0])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5]||'-')+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada jadwal mendatang.</p>';
 }
+var halamanKlien=1;
+function filterKlien(){ halamanKlien=1; renderKlien(); }
+function gantiHalamanKlien(d){ halamanKlien+=d; renderKlien(); }
 function renderKlien(){
   var q=(document.getElementById('cari').value||'').toLowerCase();
   var f=document.getElementById('filter-status').value;
   var rows=DATA.klien.filter(function(r){ var s=(r.values[3]+' '+r.values[2]).toLowerCase(); return (!q||s.indexOf(q)>=0) && (!f||r.values[16]===f) });
-  document.getElementById('daftar-klien').innerHTML=rows.length? rows.map(function(r){
+  var totalHal=Math.max(1,Math.ceil(rows.length/5)); if(halamanKlien>totalHal) halamanKlien=totalHal; if(halamanKlien<1) halamanKlien=1; var mulai=(halamanKlien-1)*5; var tampil=rows.slice(mulai,mulai+5);
+  document.getElementById('daftar-klien').innerHTML=rows.length? tampil.map(function(r){
     var nik=r.values[2]; var riw=DATA.konseling.filter(function(x){return String(x.values[0])===String(nik)}); var jad=DATA.jadwal.filter(function(x){return String(x.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}); var jadDekat=jad.length?jad[0].values[0]:'-';
-    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>Jenis kelamin: '+esc(r.values[5]||'-')+' &middot; Umur: '+(umurDariLahir(r.values[4])==='' ? '-' : umurDariLahir(r.values[4])+' tahun')+' &middot; Status: '+esc(r.values[16]||'Aktif')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>Jenis kelamin: '+esc(r.values[5]||'-')+' &middot; Umur: '+(umurDariLahir(r.values[4])==='' ? '-' : umurDariLahir(r.values[4])+' tahun')+' &middot; Status: '+esc(r.values[16]||'Aktif')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p><p style="text-align:center;margin-top:12px"><button class="btn2" type="button" '+(halamanKlien<=1?'disabled':'')+' onclick="gantiHalamanKlien(-1)">&laquo; Sebelumnya</button> <span>Halaman '+halamanKlien+' dari '+totalHal+' &middot; Menampilkan '+(mulai+1)+'-'+Math.min(mulai+5,rows.length)+' dari '+rows.length+' klien</span> <button class="btn2" type="button" '+(halamanKlien>=totalHal?'disabled':'')+' onclick="gantiHalamanKlien(1)">Selanjutnya &raquo;</button></p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
 }
 function detailKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
