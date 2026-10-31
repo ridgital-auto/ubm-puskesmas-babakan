@@ -366,6 +366,14 @@
       </form>
     </div>
   </div>
+  <div id="modal-klien" class="modal hidden">
+    <div class="card">
+      <h2>Detail Klien</h2>
+      <button class="btn2" type="button" onclick="tutupModal('modal-klien')">Tutup</button>
+      <div id="modal-klien-isi"></div>
+      <button class="btn2" type="button" onclick="tutupModal('modal-klien')">Tutup</button>
+    </div>
+  </div>
 </main>
 <script>
 var DATA={klien:[],konseling:[],jadwal:[]};
@@ -419,12 +427,14 @@ function detailKlien(nik){
   if(!k) return;
   var riw=DATA.konseling.filter(function(r){return String(r.values[0])===String(nik)});
   var jad=DATA.jadwal.filter(function(r){return String(r.values[3])===String(nik)});
-  document.getElementById('detail-klien').innerHTML='<div class="card" style="border:1px solid #e11d48"><h3>'+esc(k.values[3])+'</h3>'+
+  document.getElementById('detail-klien').innerHTML='';
+  document.getElementById('modal-klien-isi').innerHTML='<h3>'+esc(k.values[3])+'</h3>'+
     '<p>NIK: '+esc(k.values[2])+' &middot; Lahir: '+esc(k.values[4])+' &middot; '+esc(k.values[5])+' &middot; HP: '+esc(k.values[7])+'</p>'+
     '<p>Alamat: '+esc(k.values[6])+'</p>'+
     '<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16])+'</b></p>'+
     '<h3>Riwayat konseling/FU ('+riw.length+')</h3>'+(riw.length? '<table><tr><th>Tanggal</th><th>Jenis</th><th>Status</th><th>CO</th><th>Kendala</th></tr>'+riw.map(function(r){return '<tr><td>'+esc(r.values[2])+'</td><td>'+esc(r.values[3])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5])+'</td><td>'+esc(r.values[8])+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada catatan.</p>')+
-    '<h3>Perjanjian ('+jad.length+')</h3>'+(jad.length? jad.map(function(r){return '<p>'+esc(r.values[0])+' ('+esc(r.values[1])+') &mdash; '+esc(r.values[5]||'belum dicatat')+'</p>'}).join('') : '<p class="muted">Belum ada perjanjian.</p>')+'</div>';
+    '<h3>Perjanjian ('+jad.length+')</h3>'+(jad.length? jad.map(function(r){return '<p>'+esc(r.values[0])+' ('+esc(r.values[1])+') &mdash; '+esc(r.values[5]||'belum dicatat')+'</p>'}).join('') : '<p class="muted">Belum ada perjanjian.</p>');
+  document.getElementById('modal-klien').classList.remove('hidden');
   klienTerpilih=k;
 }
 function cariKlienDariTeks(teks){
