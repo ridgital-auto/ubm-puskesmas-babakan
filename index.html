@@ -49,6 +49,8 @@
   .tombol-halaman.aktif{background:#e11d48;color:#fff;font-weight:bold}
   .modal .card{max-width:680px;width:100%;max-height:92vh;overflow:auto}
   .modal.hidden{display:none}
+  #msg{position:fixed;top:12px;left:12px;right:12px;z-index:200;text-align:center;pointer-events:none}
+  #msg>div{display:inline-block;text-align:left;max-width:680px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;pointer-events:auto}
   .prev-card{border:1px solid #fecdd3;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
   .prev-card h3{margin:0 0 6px 0;font-size:17px}
   .prev-card h4{margin:0 0 6px 0;font-size:16px}
@@ -560,7 +562,7 @@
 var DATA={klien:[],konseling:[],jadwal:[]};
 var klienTerpilih=null;
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function showMsg(html,cls){document.getElementById('msg').innerHTML='<div class="'+cls+'">'+html+'</div>'; window.scrollTo(0,0)}
+function showMsg(html,cls){document.getElementById('msg').innerHTML='<div class="'+cls+'" title="Klik untuk menutup" onclick="this.remove()">'+html+'</div>';}
 function fagLabel(v){v=Number(v); if(isNaN(v)) return 'Isi skor untuk melihat tingkat adiksi'; if(v<=3) return 'Rendah (0-3)'; if(v<=6) return 'Sedang (4-6)'; return 'Tinggi (7-10)'}
 function maskNik(nik){nik=String(nik||''); return nik.length>4 ? '****'+nik.slice(-4) : nik}
 function hariIndo(d){var h=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; return h[new Date(d+'T00:00:00').getDay()]}
