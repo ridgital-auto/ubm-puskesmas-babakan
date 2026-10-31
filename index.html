@@ -603,7 +603,7 @@ function renderKlien(){
   var rows=DATA.klien.filter(function(r){ var s=(r.values[3]+' '+r.values[2]).toLowerCase(); return (!q||s.indexOf(q)>=0) && (!f||r.values[16]===f) });
   document.getElementById('daftar-klien').innerHTML=rows.length? rows.map(function(r){
     var nik=r.values[2]; var riw=DATA.konseling.filter(function(x){return String(x.values[0])===String(nik)}); var jad=DATA.jadwal.filter(function(x){return String(x.values[3])===String(nik)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1}); var jadDekat=jad.length?jad[0].values[0]:'-';
-    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
+    return '<div class="prev-card" ondblclick="bukaPemeriksaan(\''+esc(nik)+'\')"><h3>'+esc(r.values[3])+'</h3><p>Jenis kelamin: '+esc(r.values[5]||'-')+' &middot; Umur: '+(umurDariLahir(r.values[4])==='' ? '-' : umurDariLahir(r.values[4])+' tahun')+' &middot; Status: '+esc(r.values[16]||'Aktif')+' &middot; Tanggal berhenti: '+esc(r.values[15]||'-')+'</p><p>NIK: '+maskNik(nik)+'</p><p>Lahir: '+esc(r.values[4]||'-')+' &middot; '+esc(r.values[5]||'-')+'</p><p>Alamat: '+esc(r.values[6]||'-')+'</p><p>HP: '+esc(r.values[7]||'-')+' &middot; Gol darah: '+esc(r.values[11]||'-')+'</p><p>Pendidikan: '+esc(r.values[8]||'-')+' &middot; Pekerjaan: '+esc(r.values[9]||'-')+' &middot; Status kawin: '+esc(r.values[10]||'-')+'</p><button class="btn" type="button" onclick="bukaPemeriksaan(\''+esc(nik)+'\')">Pemeriksaan</button> <button class="btn2" type="button" onclick="detailKlien(\''+esc(nik)+'\')">Detail</button> <button class="btn2" type="button" onclick="mintaHapusKlien(\''+esc(nik)+'\')">Hapus</button></div>'}).join('')+'<p class="muted">Tekan Pemeriksaan pada kartu klien untuk membuka Riwayat klien itu.</p>' : '<p class="muted">Tidak ada klien yang cocok.</p>';
 }
 function detailKlien(nik){
   var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
@@ -612,7 +612,7 @@ function detailKlien(nik){
   var jad=DATA.jadwal.filter(function(r){return String(r.values[3])===String(nik)});
   document.getElementById('detail-klien').innerHTML='';
   document.getElementById('modal-klien-isi').innerHTML='<h3>'+esc(k.values[3])+'</h3>'+
-    '<p>NIK: '+esc(k.values[2])+' &middot; Lahir: '+esc(k.values[4])+' &middot; '+esc(k.values[5])+' &middot; HP: '+esc(k.values[7])+'</p>'+
+    '<p>NIK: '+esc(k.values[2])+' &middot; Lahir: '+esc(k.values[4])+' &middot; Umur: '+(umurDariLahir(k.values[4])==='' ? '-' : umurDariLahir(k.values[4])+' tahun')+' &middot; '+esc(k.values[5])+' &middot; HP: '+esc(k.values[7])+'</p>'+
     '<p>Alamat: '+esc(k.values[6])+'</p>'+
     '<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16])+'</b></p>'+
     '<h3>Riwayat konseling/FU ('+riw.length+')</h3>'+(riw.length? '<table><tr><th>Tanggal</th><th>Jenis</th><th>Status</th><th>CO</th><th>Kendala</th></tr>'+riw.map(function(r){return '<tr><td>'+esc(r.values[2])+'</td><td>'+esc(r.values[3])+'</td><td>'+esc(r.values[4])+'</td><td>'+esc(r.values[5])+'</td><td>'+esc(r.values[8])+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada catatan.</p>')+
@@ -655,7 +655,7 @@ function bukaPemeriksaan(nik){
   document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')});
   document.getElementById('page-konseling').classList.remove('hidden');
   document.getElementById('pk-judul').textContent='Pemeriksaan: '+k.values[3];
-  document.getElementById('pk-info').textContent='NIK: '+maskNik(k.values[2])+' | Status: '+(k.values[16]||'Aktif')+' | Tanggal berhenti: '+(k.values[15]||'-');
+  document.getElementById('pk-info').textContent='NIK: '+maskNik(k.values[2])+' | Jenis kelamin: '+(k.values[5]||'-')+' | Umur: '+(umurDariLahir(k.values[4])==='' ? '-' : umurDariLahir(k.values[4])+' tahun')+' | Status: '+(k.values[16]||'Aktif')+' | Tanggal berhenti: '+(k.values[15]||'-');
   renderRiwayat(); renderJadwalKlien(); window.scrollTo(0,0);
 }
 function kembaliKeDaftar(){
@@ -806,6 +806,7 @@ function tambahKonselor(prefix){ var inp=document.getElementById(prefix+'-konsel
 function val(id){ var el=document.getElementById(id); return el?(el.value||'').trim():''; }
 function cekList(name){ var out=[]; document.querySelectorAll('input[name="'+name+'"]:checked').forEach(function(c){out.push(c.value)}); return out; }
 function hitungIMT(){ var bb=parseFloat(val('a-bb')); var tb=parseFloat(val('a-tb')); var el=document.getElementById('a-imt'); if(!el) return ''; if(!bb||!tb) { el.textContent='-'; return ''; } var imt=bb/Math.pow(tb/100,2); el.textContent=imt.toFixed(1); return imt.toFixed(1); }
+function umurDariLahir(tglLahir){ var u=umurSaat(tglLahir, todayStr()); return u===''?'':u; }
 function umurSaat(tglLahir, tglKonseling){ try{ var a=new Date(tglLahir+'T00:00:00'); var b=new Date(tglKonseling+'T00:00:00'); if(isNaN(a)||isNaN(b)) return ''; var u=b.getFullYear()-a.getFullYear(); if(b.getMonth()<a.getMonth()||(b.getMonth()===a.getMonth()&&b.getDate()<a.getDate())) u--; return u>=0?u:''; }catch(e){ return ''; } }
 function statusAwalText(){
   var parts=[];
