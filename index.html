@@ -660,11 +660,20 @@ function renderStats(){
     '<div class="stat"><b>'+DATA.jadwal.length+'</b>Perjanjian tercatat</div>';
   var now=todayStr();
   var daftar=[];
-  DATA.jadwal.forEach(function(r){ if(String(r.values[0])>=now && r.values[5]!=='Hadir') daftar.push({tgl:String(r.values[0]), nama:r.values[4]||'', jenis:'Perjanjian', status:r.values[5]||'-'}); });
-  DATA.konseling.forEach(function(r){ if(String(r.values[3])==='Konseling 1'){ var pb=pertemuanBerikutnya(r); if(pb && pb>=now){ var sudah=daftar.some(function(d){ return d.tgl===pb && d.nama===(r.values[1]||''); }); if(!sudah){ var fi=infoFollowUp(String(r.values[0]), r); if(fi.status!=='Selesai follow up') daftar.push({tgl:pb, nama:r.values[1]||'', jenis:fi.jenis||'Follow up', status:fi.status}); } } } });
+  DATA.jadwal.forEach(function(r){ if(String(r.values[0])>=now && r.values[5]!=='Hadir') daftar.push({tgl:String(r.values[0]), nama:r.values[4]||'', jenis:'Perjanjian', status:r.values[5]||'-', nik:r.values[3]||''}); });
+  DATA.konseling.forEach(function(r){ if(String(r.values[3])==='Konseling 1'){ var pb=pertemuanBerikutnya(r); if(pb && pb>=now){ var sudah=daftar.some(function(d){ return d.tgl===pb && d.nama===(r.values[1]||''); }); if(!sudah){ var fi=infoFollowUp(String(r.values[0]), r); if(fi.status!=='Selesai follow up') daftar.push({tgl:pb, nama:r.values[1]||'', jenis:fi.jenis||'Follow up', status:fi.status, nik:String(r.values[0])}); } } } });
   daftar.sort(function(a,b){ if(a.tgl!==b.tgl) return a.tgl<b.tgl?-1:1; return a.nama<b.nama?-1:1; });
   var dekat=daftar.slice(0,5);
-  document.getElementById('jadwal-dekat').innerHTML=dekat.length? '<table><tr><th>Tanggal</th><th>Nama</th><th>Jenis</th><th>Status</th></tr>'+dekat.map(function(d){return '<tr><td>'+esc(formatTglID(d.tgl))+'</td><td>'+esc(d.nama)+'</td><td>'+esc(d.jenis)+'</td><td>'+esc(d.status)+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada jadwal follow up/kunjungan mendatang.</p>';
+  document.getElementById('jadwal-dekat').innerHTML=dekat.length? '<table><tr><th>Tanggal</th><th>Nama</th><th>Jenis</th><th>Status</th></tr>'+dekat.map(function(d){return '<tr><td>'+esc(formatTglID(d.tgl))+'</td><td>'+esc(d.nama)+'</td><td>'+esc(d.jenis)+'</td><td>'+esc(d.status)+(d.status==='Belum follow up'?' <button class="tombol-ikon-kecil" type="button" title="Follow Up" aria-label="Follow Up" onclick="followUpDariJadwal(\''+esc(d.nik)+'\')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.6 0-3.1-.4-4.4-1.2L3 20l1.3-4.9A8.5 8.5 0 1 1 21 11.5z"/><path d="m8.5 11.5 2.5 2.5 4.5-5"/></svg></button>':'')+'</td></tr>'}).join('')+'</table>' : '<p class="muted">Belum ada jadwal follow up/kunjungan mendatang.</p>';
+}
+function followUpDariJadwal(nik){
+  var k=DATA.klien.find(function(r){return String(r.values[2])===String(nik)});
+  if(!k){ showMsg('Klien tidak ditemukan di Daftar Klien.','err'); return; }
+  klienTerpilih=k;
+  var done={}; DATA.konseling.filter(function(r){return String(r.values[0])===String(nik)}).forEach(function(r){done[String(r.values[3])]=true});
+  if(done['CAR 1']) done['FU 3']=true; if(done['CAR 3']) done['FU 4']=true; if(done['CAR 6']) done['FU 5']=true; if(done['CAR 9']) done['FU 6']=true; if(done['CAR 12']) done['FU 7']=true;
+  var next=''; ['FU 1','FU 2','FU 3','FU 4','FU 5','FU 6','FU 7'].forEach(function(f){ if(!next && !done[f]) next=f; });
+  if(next) bukaFUBaru(next); else bukaPilihKonseling();
 }
 var halamanKlien=1;
 function filterKlien(){ halamanKlien=1; renderKlien(); }
