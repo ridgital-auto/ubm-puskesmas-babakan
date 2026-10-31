@@ -471,7 +471,15 @@
 <h2>Export</h2>
     <p>Unduh rekap layanan UBM dalam bentuk dokumen Word (.docx). Tabelnya mengikuti format lampiran: satu baris per klien, kolom Identitas Peserta Puskesmas dan Form UBM.</p>
     <p class="warn">Dokumen ini berisi NIK lengkap klien dan hanya untuk Tim UBM. Simpan dengan aman, jangan dibagikan ke luar tim.</p>
-    <button class="btn" type="button" onclick="unduhExportDocx()">Unduh Rekap DOCX (semua klien)</button>
+    <p><b>Rentang data yang diekspor:</b></p>
+    <label class="fag-opt"><input type="radio" name="export-filter" value="semua" checked onchange="aturFilterExport()"> Semua data</label>
+    <label class="fag-opt"><input type="radio" name="export-filter" value="bulan" onchange="aturFilterExport()"> Per bulan</label>
+    <div id="export-bulan-box" class="hidden"><label>Bulan</label><input type="month" id="export-bulan" onchange="renderExportPreview()"></div>
+    <label class="fag-opt"><input type="radio" name="export-filter" value="tahun" onchange="aturFilterExport()"> Per tahun</label>
+    <div id="export-tahun-box" class="hidden"><label>Tahun</label><input type="number" id="export-tahun" min="2020" max="2100" placeholder="Misal: 2026" onchange="renderExportPreview()"></div>
+    <label class="fag-opt"><input type="radio" name="export-filter" value="rentang" onchange="aturFilterExport()"> Rentang tanggal (pilih tanggal mulai sampai tanggal akhir)</label>
+    <div id="export-rentang-box" class="hidden"><div class="row"><div><label>Dari tanggal</label><input type="date" id="export-dari" onchange="renderExportPreview()"></div><div><label>Sampai tanggal</label><input type="date" id="export-sampai" onchange="renderExportPreview()"></div></div></div>
+    <button class="btn" type="button" onclick="unduhExportDocx()">Unduh Rekap DOCX</button>
     <p id="export-status" class="muted"></p>
     <div id="export-preview"></div>
   
@@ -565,11 +573,17 @@ function exportRows(){
     return [tglPeriksa||'', nik, r.values[3]||'', r.values[4]||'', r.values[5]||'', '', '', r.values[6]||'', r.values[7]||'', r.values[8]||'', r.values[9]||'', r.values[10]||'', r.values[11]||'', String(nKons), String(nCar), String(nFu), r.values[16]||'Aktif'];
   });
 }
+function filterExportAktif(){ var r=document.querySelector('input[name="export-filter"]:checked'); return r?r.value:'semua'; }
+function aturFilterExport(){ var f=filterExportAktif(); ['export-bulan-box','export-tahun-box','export-rentang-box'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); if(f==='bulan') document.getElementById('export-bulan-box').classList.remove('hidden'); if(f==='tahun') document.getElementById('export-tahun-box').classList.remove('hidden'); if(f==='rentang') document.getElementById('export-rentang-box').classList.remove('hidden'); renderExportPreview(); }
+function deskripsiPeriodeExport(){ var f=filterExportAktif(); if(f==='bulan'){ var b=document.getElementById('export-bulan').value||''; if(!b) return ''; var pp=b.split('-'); var namaBulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][Number(pp[1])-1]||''; return 'Bulan '+namaBulan+' '+pp[0]; } if(f==='tahun'){ var y=document.getElementById('export-tahun').value||''; return y?('Tahun '+y):''; } if(f==='rentang'){ var d=document.getElementById('export-dari').value||'', s=document.getElementById('export-sampai').value||''; if(!d||!s) return ''; return formatTglID(d)+' sampai '+formatTglID(s); } return 'Semua data'; }
+function exportRowsTersaring(){ var semua=exportRows(); var f=filterExportAktif(); if(f==='semua') return semua; if(f==='bulan'){ var b=document.getElementById('export-bulan').value||''; if(!b) return []; return semua.filter(function(x){ return String(x[0]||'').slice(0,7)===b; }); } if(f==='tahun'){ var y=document.getElementById('export-tahun').value||''; if(!y) return []; return semua.filter(function(x){ return String(x[0]||'').slice(0,4)===String(y); }); } if(f==='rentang'){ var d=document.getElementById('export-dari').value||'', s=document.getElementById('export-sampai').value||''; if(!d||!s||d>s) return []; return semua.filter(function(x){ var t=String(x[0]||'').slice(0,10); return t>=d && t<=s; }); } return semua; }
+function pesanFilterExport(){ var f=filterExportAktif(); if(f==='bulan' && !document.getElementById('export-bulan').value) return 'Pilih bulan dulu.'; if(f==='tahun' && !document.getElementById('export-tahun').value) return 'Isi tahun dulu.'; if(f==='rentang'){ var d=document.getElementById('export-dari').value||'', s=document.getElementById('export-sampai').value||''; if(!d||!s) return 'Isi tanggal mulai dan tanggal akhir dulu.'; if(d>s) return 'Tanggal mulai tidak boleh setelah tanggal akhir.'; } return ''; }
 function renderExportPreview(){
   var el=document.getElementById('export-preview'); if(!el) return;
-  var rows=exportRows();
-  if(!rows.length){ el.innerHTML='<p class="muted">Belum ada klien untuk diekspor.</p>'; return; }
-  el.innerHTML='<p>'+rows.length+' klien akan diekspor.</p><table><tr><th>Nama</th><th>NIK</th><th>Status</th><th>Konseling</th><th>CAR</th><th>Follow Up</th></tr>'+rows.map(function(x){return '<tr><td>'+esc(x[2])+'</td><td>'+maskNik(x[1])+'</td><td>'+esc(x[16])+'</td><td>'+esc(x[13])+'</td><td>'+esc(x[14])+'</td><td>'+esc(x[15])+'</td></tr>'}).join('')+'</table>';
+  var rows=exportRowsTersaring();
+  var pesanFilter=pesanFilterExport(); if(pesanFilter){ el.innerHTML='<p class="muted">'+esc(pesanFilter)+'</p>'; return; }
+  if(!rows.length){ el.innerHTML='<p class="muted">Tidak ada klien'+(filterExportAktif()==='semua'?'':' pada periode '+deskripsiPeriodeExport())+' untuk diekspor.</p>'; return; }
+  el.innerHTML='<p>'+rows.length+' klien akan diekspor'+(filterExportAktif()==='semua'?'':' ('+deskripsiPeriodeExport()+')')+'.</p><table><tr><th>Nama</th><th>NIK</th><th>Status</th><th>Konseling</th><th>CAR</th><th>Follow Up</th></tr>'+rows.map(function(x){return '<tr><td>'+esc(x[2])+'</td><td>'+maskNik(x[1])+'</td><td>'+esc(x[16])+'</td><td>'+esc(x[13])+'</td><td>'+esc(x[14])+'</td><td>'+esc(x[15])+'</td></tr>'}).join('')+'</table>';
 }
 function exportCell(D, text, opts){
   opts=opts||{};
@@ -584,21 +598,23 @@ function buatExportDocx(){
   green.forEach(function(h){ h2cells.push(exportCell(D,h,{bold:true,color:'FFFFFF',fill:'70AD47'})); });
   orange.forEach(function(h){ h2cells.push(exportCell(D,h,{bold:true,color:'FFFFFF',fill:'ED7D31'})); });
   var rows=[h1, new D.TableRow({ children: h2cells })];
-  exportRows().forEach(function(r){ rows.push(new D.TableRow({ children: r.map(function(v){ return exportCell(D,v); }) })); });
+  exportRowsTersaring().forEach(function(r){ rows.push(new D.TableRow({ children: r.map(function(v){ return exportCell(D,v); }) })); });
   var today=new Date(); var tgl=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   var doc=new D.Document({ sections: [{ properties: { page: { size: { orientation: D.PageOrientation.LANDSCAPE }, margin: { top: 720, bottom: 720, left: 720, right: 720 } } }, children: [
     new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [new D.TextRun({ text: 'REKAP LAYANAN UBM PUSKESMAS BABAKAN', bold: true, fontSize: 28 })] }),
     new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [new D.TextRun({ text: 'Tanggal unduh: '+tgl, fontSize: 20 })] }),
+    new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [new D.TextRun({ text: 'Periode: '+deskripsiPeriodeExport(), fontSize: 20 })] }),
     new D.Paragraph({ children: [new D.TextRun({ text: 'Dokumen ini hanya untuk Tim UBM dan berisi NIK klien. Simpan dengan aman.', fontSize: 18 })] }),
     new D.Table({ width: { size: 100, type: D.WidthType.PERCENTAGE }, rows: rows })
   ] }] });
   return D.Packer.toBlob(doc).then(function(blob){
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Rekap-UBM-Puskesmas-Babakan-'+tgl+'.docx'; document.body.appendChild(a); a.click(); a.remove();
-    document.getElementById('export-status').textContent='DOCX berhasil diunduh ('+exportRows().length+' klien).';
+    document.getElementById('export-status').textContent='DOCX berhasil diunduh ('+exportRowsTersaring().length+' klien, '+deskripsiPeriodeExport()+').';
   });
 }
 function unduhExportDocx(){
-  if(!DATA.klien.length){ document.getElementById('export-status').textContent='Belum ada klien untuk diekspor.'; return; }
+  var pesanFilter=pesanFilterExport(); if(pesanFilter){ document.getElementById('export-status').textContent=pesanFilter; return; }
+  if(!exportRowsTersaring().length){ document.getElementById('export-status').textContent='Tidak ada klien pada periode yang dipilih, tidak ada file yang diunduh.'; return; }
   document.getElementById('export-status').textContent='Menyiapkan DOCX...';
   if(window.docx){ buatExportDocx().catch(function(){ document.getElementById('export-status').textContent='Gagal membuat DOCX, coba lagi.'; }); return; }
   var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js';
@@ -686,7 +702,7 @@ function renderStatusOptions(){
 }
 function tampilBeranda(){ document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')}); document.getElementById('tab-beranda').classList.remove('hidden'); window.scrollTo(0,0); }
 function tampilDaftarKlien(){ document.querySelectorAll('main section').forEach(function(s){s.classList.add('hidden')}); document.getElementById('tab-klien').classList.remove('hidden'); renderKlien(); window.scrollTo(0,0); }
-function bukaExport(){ renderExportPreview(); document.getElementById('modal-export').classList.remove('hidden'); }
+function bukaExport(){ aturFilterExport(); document.getElementById('modal-export').classList.remove('hidden'); }
 function bukaHelp(){ document.getElementById('modal-help').classList.remove('hidden'); }
 function bukaPendaftaranBaru(){ document.getElementById('modal-baru').classList.remove('hidden'); }
 function bukaPemeriksaan(nik){
