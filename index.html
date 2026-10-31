@@ -855,7 +855,7 @@ function detailRiwayat(row){
   document.getElementById('modal-detail-isi').innerHTML=
     '<p><b>'+esc(klienTerpilih.values[3])+'</b> &middot; NIK: '+esc(klienTerpilih.values[2])+'</p>'+
     '<p>Tanggal: '+esc(r.values[2])+' &middot; Jenis: '+esc(r.values[3])+' &middot; Status merokok: '+esc(r.values[4])+'</p>' +
-    (function(){ var fu=cariFU(klienTerpilih.values[2], r.values[2]); var fuS=!fu?'Belum dijadwalkan':(fu.values[5]==='Hadir'?'Selesai follow up':'Belum follow up'); return '<p><b>Status klien saat ini:</b> '+esc(klienTerpilih.values[16]||'Aktif')+' &middot; <b>Status Follow Up:</b> '+esc(fuS)+' &middot; <b>Jadwal FU:</b> '+(fu?esc(fu.values[0]):'-')+'</p>'; })() +
+    (function(){ var fi=infoFollowUp(klienTerpilih.values[2], r); return '<p><b>Status klien saat ini:</b> '+esc(klienTerpilih.values[16]||'Aktif')+' &middot; <b>Status Follow Up:</b> '+esc(fi.status)+' &middot; <b>Jadwal FU:</b> '+esc(fi.tgl)+'</p>'; })() +
     '<p>CO: '+esc(r.values[5])+' ppm'+(r.values[5]===''||r.values[5]===null?'':' ('+coInterpretasi(Number(r.values[5]))+')')+' &middot; BB: '+esc(r.values[6])+' kg &middot; TD: '+esc(r.values[7])+'</p>'+
     '<p><b>Profil / kendala:</b><br>'+esc(r.values[8])+'</p>'+
     '<p><b>Tindak lanjut:</b><br>'+esc(r.values[9])+'</p>';
@@ -970,6 +970,12 @@ function hitungMFag(){
 }
 function resetMFag(){ document.querySelectorAll('input[name^="mfag"]').forEach(function(r){r.checked=false}); hitungMFag(); }
 function motivasiDariCatatan(r){ var teks=(r.values[8]||'')+' '+(r.values[9]||''); var m=teks.match(/motivasi\s*(\d+)\s*\/\s*10/i); return m?m[1]:'-'; }
+function formatTglID(t){ if(!t) return '-'; var s=String(t).slice(0,10); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m? m[3]+'/'+m[2]+'/'+m[1] : s; }
+function pertemuanBerikutnya(r){ var m=String(r.values[9]||'').match(/Pertemuan berikutnya: (\d{4}-\d{2}-\d{2})/); return m?m[1]:''; }
+function infoFollowUp(nik,r){
+  if(String(r.values[3])==='Konseling 1'){ var pb=pertemuanBerikutnya(r); if(pb){ var jad=DATA.jadwal.find(function(x){return String(x.values[3])===String(nik) && String(x.values[0])===pb}); var sudah=(jad && jad.values[5]==='Hadir') || DATA.konseling.some(function(x){return String(x.values[0])===String(nik) && x.row!==r.row && String(x.values[2])>=pb}); return {status:sudah?'Selesai follow up':'Belum follow up', tgl:formatTglID(pb)}; } }
+  var fu=cariFU(nik, r.values[2]); if(!fu) return {status:'Belum dijadwalkan', tgl:'-'}; return {status: fu.values[5]==='Hadir'?'Selesai follow up':'Belum follow up', tgl:formatTglID(fu.values[0])};
+}
 function renderRiwayat(){
   if(!klienTerpilih) return;
   var k=klienTerpilih; var nik=k.values[2];
@@ -977,9 +983,9 @@ function renderRiwayat(){
   if(document.getElementById('pk-ringkas')) document.getElementById('pk-ringkas').innerHTML='<p>Fagerstrom: '+esc(k.values[12])+' &middot; Motivasi: '+esc(k.values[13])+'/10 &middot; Tahap: '+esc(k.values[14])+' &middot; Tanggal berhenti: '+esc(k.values[15]||'-')+' &middot; Status: <b>'+esc(k.values[16]||'Aktif')+'</b></p><p>'+progresKlien(k)+'</p>';
   renderStatusOptions(); terapkanKunciPertama();
   document.getElementById('pk-riwayat-tabel').innerHTML=riw.length? riw.map(function(r){
-    var fu=cariFU(nik, r.values[2]);
-    var fuTgl=fu?fu.values[0]:'-';
-    var fuStatus=!fu?'Belum dijadwalkan':(fu.values[5]==='Hadir'?'Selesai follow up':'Belum follow up');
+    var fuInfo=infoFollowUp(nik, r);
+    var fuTgl=fuInfo.tgl;
+    var fuStatus=fuInfo.status;
     var ken=String(r.values[8]||''); ken=ken.length>140?ken.slice(0,140)+'...':ken;
     return '<div class="prev-card"><h4>'+esc(r.values[2])+' &mdash; '+esc(r.values[3])+'</h4><p>Preview pemeriksaan: Status merokok '+esc(r.values[4]||'-')+' &middot; CO '+(r.values[5]===''||r.values[5]===null?'-':esc(r.values[5])+' ppm ('+coInterpretasi(Number(r.values[5]))+')')+' &middot; Motivasi '+esc(motivasiDariCatatan(r))+'/10</p>'+(ken?'<p>Gejala withdrawal: '+esc(ken)+'</p>':'<p>Gejala withdrawal: -</p>')+'<div class="prev-fu"><p><b>Status Follow Up:</b> <span class="pill">'+esc(fuStatus)+'</span> &middot; Jadwal FU: '+esc(fuTgl)+'</p></div><button class="btn" type="button" onclick="detailRiwayat('+r.row+')">Pemeriksaan</button> <button class="btn2" type="button" onclick="bukaFU('+r.row+')">Follow Up</button> <button class="btn2" type="button" onclick="bukaEditRiwayat('+r.row+')">Edit</button> <button class="btn2" type="button" onclick="mintaHapusRiwayat('+r.row+')">Hapus Riwayat</button></div>'}).join('') : '<p class="muted">Belum ada riwayat konseling/FU untuk klien ini. Tekan +Konseling untuk pemeriksaan pertama.</p>';
 }
