@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
   *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff7f8;color:#1f2937}
-  header{background:linear-gradient(135deg,#dc2626,#ec4899);color:#fff;padding:16px;display:flex;align-items:center;gap:12px} .logo-ubm{flex-shrink:0} .logo-ubm svg{width:48px;height:48px;display:block} header h1{margin:0;font-size:20px} header p{margin:4px 0 0;opacity:.9;font-size:13px}
+  header{background:linear-gradient(135deg,#dc2626,#ec4899);color:#fff;padding:16px;display:flex;align-items:center;gap:12px} .logo-ubm{flex-shrink:0;cursor:pointer} .logo-ubm svg{width:48px;height:48px;display:block} header h1{margin:0;font-size:20px} header p{margin:4px 0 0;opacity:.9;font-size:13px}
   nav{display:flex;gap:6px;padding:10px;background:#fff;border-bottom:1px solid #ddd;flex-wrap:wrap}
   nav button{border:1px solid #e11d48;background:#fff;color:#e11d48;padding:9px 13px;border-radius:20px;cursor:pointer;font-size:14px}
   nav button.on{background:#e11d48;color:#fff;font-weight:bold}
@@ -72,7 +72,7 @@
 </head>
 <body>
 <header>
-  <div class="logo-ubm" aria-label="Logo UBM"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="29" fill="#ffffff"/><circle cx="32" cy="32" r="29" fill="none" stroke="#dc2626" stroke-width="5"/><rect x="13" y="28" width="26" height="9" rx="2" fill="#ffffff" stroke="#1f2937" stroke-width="2"/><rect x="39" y="28" width="7" height="9" fill="#f59e0b" stroke="#1f2937" stroke-width="2"/><path d="M49 27c2-2 2-4 0-6M53 28c2-2 2-5 0-7" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="49" x2="49" y2="15" stroke="#dc2626" stroke-width="5" stroke-linecap="round"/></svg></div>
+  <div class="logo-ubm" aria-label="Logo UBM" title="Ke Beranda" onclick="tampilBeranda()"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="29" fill="#ffffff"/><circle cx="32" cy="32" r="29" fill="none" stroke="#dc2626" stroke-width="5"/><rect x="13" y="28" width="26" height="9" rx="2" fill="#ffffff" stroke="#1f2937" stroke-width="2"/><rect x="39" y="28" width="7" height="9" fill="#f59e0b" stroke="#1f2937" stroke-width="2"/><path d="M49 27c2-2 2-4 0-6M53 28c2-2 2-5 0-7" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="49" x2="49" y2="15" stroke="#dc2626" stroke-width="5" stroke-linecap="round"/></svg></div>
   <div>
   <h1>UBM Puskesmas Babakan</h1>
   <p>Layanan konseling berhenti merokok &mdash; Senin&ndash;Kamis, 12.00&ndash;13.00 WITA, dengan perjanjian. Data tersimpan di Sheet e-RM UBM lewat API Apps Script.</p>
