@@ -63,6 +63,11 @@
   .fag-opt input[type=radio]{width:20px;height:20px;accent-color:#e11d48;vertical-align:middle;margin-right:8px}
   .fag-q{margin:12px 0} .fag-q label{font-weight:normal;margin:6px 0}
   .fag-q input[type=radio]{width:auto}
+  .tabel-detail{width:100%;border-collapse:collapse;margin:2px 0 10px}
+  .tabel-detail td{padding:3px 6px 3px 0;vertical-align:top}
+  .tabel-detail td.lbl{white-space:nowrap;font-weight:600}
+  .tabel-detail td.titik{width:14px;text-align:center;color:#9d174d;font-weight:600}
+  .tabel-detail tr.judul td{background:#fce7f3;font-weight:700;padding:5px 6px}
 </style>
 </head>
 <body>
@@ -924,15 +929,33 @@ function cariFU(nik, tanggal){
 function tampilDetail(teks){
   var s=esc(teks||'');
   if(!s) return '-';
+  s=s.replace(/(\d{4})-(\d{2})-(\d{2})/g,'$3/$2/$1');
   s=s.split(' | ').join('<br>');
   var labels4=['Hasil follow up','Kendala terberat','Relaps','Masih merokok setelah tanggal berhenti','Metode yang digunakan','Cerita kendala tidak bisa berhenti','Batang yang dikonsumsi bila masih merokok','Withdrawal effect','Kendala berhenti','Kendala lain','Kebiasaan yang menjadi kendala','Langkah yang diambil','Rencana/saran yang diberikan','Kesimpulan follow up','Akan berhenti pada tanggal','Tidak yakin, alasan','Waktu follow up','Relevansi','Risiko','Keuntungan','Hambatan','Pengulangan','Alasan motivasi','Jenis rokok','Rokok elektronik','Konselor'];
   labels4.forEach(function(L){ s=s.split('; '+L+': ').join('<br>'+L+': '); });
+  s=s.split('. Status awal (Lampiran 1): ').join('.<br>Status awal (Lampiran 1):<br>');
   s=s.split('Status awal (Lampiran 1): ').join('Status awal (Lampiran 1):<br>');
   var labelsAwal=['No. RM','Nama Sekolah','Kelas','Alasan mulai merokok','Lama merokok','Jumlah rokok','Anggota keluarga yang merokok','Pemeriksaan awal','Riwayat berhenti sebelumnya','Tingkat kesiapan','Alasan ingin berhenti','Disampaikan','Pilihan terapi','Pertemuan berikutnya'];
   labelsAwal.forEach(function(L){ s=s.split(', '+L+': ').join('<br>'+L+': '); });
   ['Metode','Dukungan keluarga','Konselor','Profil'].forEach(function(L){ s=s.split('. '+L+': ').join('<br>'+L+': '); });
   s=s.split('. Antisipasi gejala').join('<br>Antisipasi gejala');
   return s;
+}
+function barisDetail(ln){
+  var i=ln.indexOf(': ');
+  if(i<0) return '<tr><td colspan="3">'+ln+'</td></tr>';
+  return '<tr><td class="lbl">'+ln.slice(0,i)+'</td><td class="titik">:</td><td>'+ln.slice(i+2)+'</td></tr>';
+}
+function tabelDetail(teks){
+  var rows='';
+  tampilDetail(teks||'').split('<br>').forEach(function(ln){
+    if(!ln) return;
+    var m=ln.match(/^\[(Lampiran 4|5R)\] (.*)$/);
+    if(m){ rows+='<tr class="judul"><td colspan="3">'+esc(m[1])+'</td></tr>'; if(m[2]) rows+=barisDetail(m[2]); return; }
+    if(ln==='Status awal (Lampiran 1):'){ rows+='<tr class="judul"><td colspan="3">Status awal (Lampiran 1)</td></tr>'; return; }
+    rows+=barisDetail(ln);
+  });
+  return '<table class="tabel-detail">'+rows+'</table>';
 }
 function detailRiwayat(row){
   var r=DATA.konseling.find(function(x){return x.row===row}); if(!r||!klienTerpilih) return;
@@ -941,8 +964,8 @@ function detailRiwayat(row){
     '<p>Tanggal: '+esc(formatTglID(r.values[2]))+' &middot; Jenis: '+esc(r.values[3])+' &middot; Status merokok: '+esc(r.values[4])+'</p>' +
     (function(){ var fi=infoFollowUp(klienTerpilih.values[2], r); return '<p><b>Status klien saat ini:</b> '+esc(klienTerpilih.values[16]||'Aktif')+' &middot; <b>'+esc(fi.jenis||'Follow up')+':</b> '+esc(fi.status)+' &middot; <b>Jadwal FU:</b> '+esc(fi.tgl)+'</p>'; })() +
     '<p>CO: '+esc(r.values[5])+' ppm'+(r.values[5]===''||r.values[5]===null?'':' ('+coInterpretasi(Number(r.values[5]))+')')+' &middot; BB: '+esc(r.values[6])+' kg &middot; TD: '+esc(r.values[7])+'</p>'+
-    '<p><b>Profil / kendala:</b><br>'+tampilDetail(r.values[8])+'</p>'+
-    '<p><b>Tindak lanjut:</b><br>'+tampilDetail(r.values[9])+'</p>';
+    '<p><b>Profil / kendala:</b><br>'+tabelDetail(r.values[8])+'</p>'+
+    '<p><b>Tindak lanjut:</b><br>'+tabelDetail(r.values[9])+'</p>';
   document.getElementById('modal-detail').classList.remove('hidden');
 }
 function bukaFU(row){
