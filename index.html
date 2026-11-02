@@ -936,10 +936,28 @@ function tampilDetail(teks){
   s=s.split('. Status awal (Lampiran 1): ').join('.<br>Status awal (Lampiran 1):<br>');
   s=s.split('Status awal (Lampiran 1): ').join('Status awal (Lampiran 1):<br>');
   var labelsAwal=['No. RM','Nama Sekolah','Kelas','Alasan mulai merokok','Lama merokok','Jumlah rokok','Anggota keluarga yang merokok','Pemeriksaan awal','Riwayat berhenti sebelumnya','Tingkat kesiapan','Alasan ingin berhenti','Disampaikan','Pilihan terapi','Pertemuan berikutnya'];
-  labelsAwal.forEach(function(L){ s=s.split(', '+L+': ').join('<br>'+L+': '); });
+  labelsAwal.forEach(function(L){ s=s.split('. '+L+': ').join('<br>'+L+': '); s=s.split(', '+L+': ').join('<br>'+L+': '); });
   ['Metode','Dukungan keluarga','Konselor','Profil'].forEach(function(L){ s=s.split('. '+L+': ').join('<br>'+L+': '); });
   s=s.split('. Antisipasi gejala').join('<br>Antisipasi gejala');
   return s;
+}
+function barisProfil(ln){
+  var m=ln.match(/^Profil: (\d+) batang[/]hari, mulai merokok usia (\d+), jenis: (.+?)\. Fagerstrom (\d+) \((.+?)\), motivasi (\d+)[/]10, tahap: (.+?)\.(.*)$/);
+  if(!m) return '';
+  var out='';
+  out+=barisDetail('Jumlah rokok: '+m[1]+' batang/hari');
+  out+=barisDetail('Usia mulai merokok: '+m[2]+' tahun');
+  out+=barisDetail('Jenis rokok: '+m[3]);
+  out+=barisDetail('Fagerstrom: '+m[4]+' ('+m[5]+')');
+  out+=barisDetail('Motivasi: '+m[6]+'/10');
+  out+=barisDetail('Tahap: '+m[7]);
+  var rest=(m[8]||'').trim();
+  if(rest){
+    var ri=rest.indexOf('Alasan motivasi: ');
+    if(ri>=0){ var s1=rest.slice(0,ri).trim(); var s2=rest.slice(ri).trim(); if(s1) out+=barisDetail(s1); out+=barisDetail(s2); }
+    else out+=barisDetail(rest);
+  }
+  return out;
 }
 function barisDetail(ln){
   var i=ln.indexOf(': ');
@@ -953,6 +971,7 @@ function tabelDetail(teks){
     var m=ln.match(/^\[(Lampiran 4|5R)\] (.*)$/);
     if(m){ rows+='<tr class="judul"><td colspan="3">'+esc(m[1])+'</td></tr>'; if(m[2]) rows+=barisDetail(m[2]); return; }
     if(ln==='Status awal (Lampiran 1):'){ rows+='<tr class="judul"><td colspan="3">Status awal (Lampiran 1)</td></tr>'; return; }
+    if(ln.indexOf('Profil: ')===0){ var pr=barisProfil(ln); if(pr){ rows+=pr; return; } }
     rows+=barisDetail(ln);
   });
   return '<table class="tabel-detail">'+rows+'</table>';
