@@ -252,7 +252,7 @@
         <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran menangani withdrawal effect"> Saran menangani withdrawal effect</label>
         <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Strategi sesuai background masalah klien"> Strategi sesuai background masalah klien</label>
         <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran ke dokter bila masalah berat"> Saran ke dokter bila masalah berat</label>
-        <label>Kesimpulan follow up</label><select id="f-simpulan"><option value="">-</option><option>Berhasil</option><option>Gagal</option><option>Tidak dapat menindaklanjuti</option><option>Tidak ada tindak lanjut</option><option>Rujuk</option></select>
+        <div id="f-simpulan-wrap"><label>Kesimpulan follow up</label><select id="f-simpulan"><option value="">-</option><option>Berhasil</option><option>Gagal</option><option>Tidak dapat menindaklanjuti</option><option>Tidak ada tindak lanjut</option><option>Rujuk</option></select></div>
         <label>Rencana / saran yang diberikan</label><textarea id="f-rencana"></textarea>
         <label>Jadwal follow up selanjutnya</label><input type="date" id="f-berikutnya">
         <div class="row" id="fu4-akan-row">
@@ -789,7 +789,9 @@ function bukaPilihKonseling(){
   var fus=[{j:'FU 1',ket:'3-7 hari setelah berhenti'},{j:'FU 2',ket:'10 hari-2 minggu setelah berhenti'},{j:'FU 3',ket:'1 bulan setelah berhenti'},{j:'FU 4',ket:'3 bulan setelah berhenti'},{j:'FU 5',ket:'6 bulan setelah berhenti'},{j:'FU 6',ket:'9 bulan setelah berhenti'},{j:'FU 7',ket:'12 bulan setelah berhenti'}];
   var doneFU={}; Object.keys(done).forEach(function(k){doneFU[k]=true}); if(done['CAR 1']) doneFU['FU 3']=true; if(done['CAR 3']) doneFU['FU 4']=true; if(done['CAR 6']) doneFU['FU 5']=true; if(done['CAR 9']) doneFU['FU 6']=true; if(done['CAR 12']) doneFU['FU 7']=true;
   function tombolFU(f){ if(doneFU[f.j]) return '<button class="pilih-btn" type="button" disabled>'+esc(f.j)+' &mdash; '+esc(f.ket)+' &mdash; sudah dilakukan</button>'; return '<button class="pilih-btn" type="button" onclick="pilihKonseling(\''+f.j+'\')">'+esc(f.j)+' &mdash; '+esc(f.ket)+'</button>'; }
-  document.getElementById('pilih-konseling-isi').innerHTML='<h3>Konseling</h3>'+kons.map(tombol).join('')+'<h3>Follow Up (setelah berhenti)</h3>'+fus.map(tombolFU).join('');
+  var maxK=0; Object.keys(done).forEach(function(k){ var mm=k.match(/^Konseling (\d+)$/); if(mm) maxK=Math.max(maxK, Number(mm[1])); });
+  var tambahKonseling=maxK>=6 ? '<button class="pilih-btn" type="button" onclick="pilihKonseling(\'Konseling '+(maxK+1)+'\')">+ Tambah Konseling (Konseling '+(maxK+1)+')</button>' : '';
+  document.getElementById('pilih-konseling-isi').innerHTML='<h3>Konseling</h3>'+kons.map(tombol).join('')+tambahKonseling+'<h3>Follow Up (setelah berhenti)</h3>'+fus.map(tombolFU).join('');
   document.getElementById('modal-pilih-konseling').classList.remove('hidden');
 }
 function pilihKonseling(jenis){
@@ -802,7 +804,7 @@ function bukaFUBaru(jenis){
   editRow=null; editLama=null; document.getElementById('mode-edit-m').classList.add('hidden'); resetFormFU();
   document.getElementById('modal-fu-judul').textContent='Konseling / Follow Up: '+klienTerpilih.values[3];
   document.getElementById('m-tgl').value=todayStr();
-  document.getElementById('m-jenis').value=jenis;
+  setPilih('m-jenis', jenis);
   var stTerakhir=statusTerakhirKlien(klienTerpilih.values[2]); if(stTerakhir) setPilih('m-status', stTerakhir); aturJenisFU();
   document.getElementById('modal-fu').classList.remove('hidden');
 }
@@ -1065,6 +1067,8 @@ function aturRelaps(){ var box=document.getElementById('f-relaps-sebab-box'); if
 function aturJenisFU(){
   var fu=jenisFUQuit();
   var st=document.getElementById('m-status'); if(st){ st.parentElement.classList.toggle('hidden', fu); if(fu && !editRow) st.value='Sudah berhenti'; }
+  var sel=document.getElementById('m-status'); if(sel){ var optBerhenti=null; for(var i=0;i<sel.options.length;i++){ if(sel.options[i].text==='Sudah berhenti') optBerhenti=sel.options[i]; } if(optBerhenti){ optBerhenti.hidden=!fu; if(!fu && !editRow && sel.value==='Sudah berhenti') sel.value='Masih merokok'; } }
+  var sw=document.getElementById('f-simpulan-wrap'); if(sw) sw.classList.toggle('hidden', !fu);
   ['m-fag-btn','m-mot-btn'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.toggle('hidden', fu); });
   if(fu){ ['m-fag-box','m-mot-box'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hidden'); }); }
   var ar=document.getElementById('fu4-akan-row'); if(ar) ar.classList.toggle('hidden', fu);
