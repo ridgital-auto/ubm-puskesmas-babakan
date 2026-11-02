@@ -170,6 +170,7 @@
           <div><label>BB (kg)</label><input type="number" id="m-bb" step="0.1"></div>
           <div><label>TD (mmHg)</label><input id="m-td" placeholder="Misal: 120/80"></div>
         </div>
+        <label>Hasil pemeriksaan lainnya</label><textarea id="m-hasil-lain" placeholder="Misal: gula darah, kolesterol, atau hasil lab lain"></textarea>
         <button class="btn2" type="button" id="m-fag-btn" onclick="toggleForm('m-fag-box','m-fag-btn','Form Fagerstrom')">Tampilkan Form Fagerstrom</button>
         <div id="m-fag-box" class="hidden">
           <p><b>Kuesioner Adiksi Nikotin Fagerstrom (Lampiran 2) &mdash; pilih satu jawaban per pertanyaan:</b></p>
@@ -245,21 +246,6 @@
         <label class="fag-opt"><input type="checkbox" name="f-wd" value="Insomnia"> Insomnia</label>
         <label>Kebiasaan yang menjadi kendala</label><textarea id="f-kebiasaan" placeholder="Misal: bangun tidur masih mencari rokok"></textarea>
         </div>
-        <div id="fu4-umum">
-        <p><b>Langkah yang diambil / action taken (centang bila dilakukan):</b></p>
-        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Memberikan reward atas keberhasilan berhenti merokok"> Memberikan reward atas keberhasilan berhenti merokok</label>
-        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran tambahan dan meninjau strategi untuk mempertahankan berhenti"> Saran tambahan dan meninjau strategi untuk mempertahankan berhenti</label>
-        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran menangani withdrawal effect"> Saran menangani withdrawal effect</label>
-        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Strategi sesuai background masalah klien"> Strategi sesuai background masalah klien</label>
-        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran ke dokter bila masalah berat"> Saran ke dokter bila masalah berat</label>
-        <div id="f-simpulan-wrap"><label>Kesimpulan follow up</label><select id="f-simpulan"><option value="">-</option><option>Berhasil</option><option>Gagal</option><option>Tidak dapat menindaklanjuti</option><option>Tidak ada tindak lanjut</option><option>Rujuk</option></select></div>
-        <label>Rencana / saran yang diberikan</label><textarea id="f-rencana"></textarea>
-        <label>Jadwal follow up selanjutnya</label><input type="date" id="f-berikutnya">
-        <div class="row" id="fu4-akan-row">
-          <div><label>Akan berhenti pada tanggal</label><input type="date" id="f-akan"></div>
-          <div><label>Tidak yakin, alasan</label><input id="f-tidak-yakin"></div>
-        </div>
-        </div>
         <div id="fu-5r" class="hidden">
         <p><b>Metode 5R (untuk klien yang masih merokok / belum mau berhenti):</b></p>
         <label>Relevance &mdash; Relevansi: mengapa berhenti penting bagi klien secara pribadi</label><textarea id="r-relevansi"></textarea>
@@ -268,8 +254,23 @@
         <label>Roadblocks &mdash; Hambatan untuk berhenti</label><textarea id="r-hambatan"></textarea>
         <label>Repetition &mdash; Pengulangan: rencana mengulang motivasi/konseling</label><textarea id="r-pengulangan"></textarea>
         </div>
+        <div id="fu4-umum">
+        <p><b>Langkah yang diambil / action taken (centang bila dilakukan):</b></p>
+        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Memberikan reward atas keberhasilan berhenti merokok"> Memberikan reward atas keberhasilan berhenti merokok</label>
+        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran tambahan dan meninjau strategi untuk mempertahankan berhenti"> Saran tambahan dan meninjau strategi untuk mempertahankan berhenti</label>
+        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran menangani withdrawal effect"> Saran menangani withdrawal effect</label>
+        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Strategi sesuai background masalah klien"> Strategi sesuai background masalah klien</label>
+        <label class="fag-opt"><input type="checkbox" name="f-langkah" value="Saran ke dokter bila masalah berat"> Saran ke dokter bila masalah berat</label>
+        <div id="f-simpulan-wrap"><label>Kesimpulan follow up</label><select id="f-simpulan"><option value="">-</option><option>Berhasil</option><option>Gagal</option><option>Tidak dapat menindaklanjuti</option><option>Tidak ada tindak lanjut</option><option>Rujuk</option></select></div>
+        <label>Rencana / Tindak lanjut</label><textarea id="f-rencana"></textarea>
+        <label>Jadwal follow up selanjutnya</label><input type="date" id="f-berikutnya">
+        <div class="row" id="fu4-akan-row">
+          <div><label>Akan berhenti pada tanggal</label><input type="date" id="f-akan"></div>
+          <div><label>Tidak yakin, alasan</label><input id="f-tidak-yakin"></div>
+        </div>
+        </div>
         <div id="m-kendala-wrap"><label>Kendala / gejala putus nikotin</label><textarea id="m-kendala"></textarea></div>
-        <div id="m-tindak-wrap"><label>Tindak lanjut / rencana</label><textarea id="m-tindak"></textarea></div>
+        <div id="m-tindak-wrap" class="hidden"><label>Tindak lanjut / rencana</label><textarea id="m-tindak"></textarea></div>
         <button class="btn" type="submit">Simpan Konseling / FU</button>
       </form>
     </div>
@@ -862,7 +863,7 @@ function uraiStatusAwal(teks){ var labels=['No. RM','Nama Sekolah','Kelas','Alas
 function uraiPenilaian(teks){ var o={fag:'',motivasi:'',motAlasan:'',konselor:''}; if(!teks) return o; var idx=teks.lastIndexOf('Penilaian: '); var s=idx>=0?teks.slice(idx+11):teks; var m; m=s.match(/Fagerstrom (\d+)/); if(m) o.fag=m[1]; m=s.match(/Motivasi (\d+)\/10/); if(m) o.motivasi=m[1]; m=s.match(/Alasan motivasi: (.+?)(?=; (Konselor|Jenis rokok|Rokok elektronik):|$)/); if(m) o.motAlasan=m[1]; m=s.match(/Konselor: ([^;]+)/); if(m) o.konselor=m[1].trim(); return o; }
 function pisahLampiran4(teks){ var out={dasar:teks||'',fu:''}; if(!teks) return out; var idx=teks.indexOf('[Lampiran 4]'); if(idx<0) return out; out.dasar=teks.slice(0,idx).replace(/\s*\|\s*$/,'').trim(); out.fu=teks.slice(idx+13).trim(); return out; }
 function uraiFU4Kendala(fu){ var labels=['Hasil follow up','Kendala terberat','Relaps','Gejala Putus Nikotin/Withdrawal','Masih merokok setelah tanggal berhenti','Metode yang digunakan','Cerita kendala tidak bisa berhenti','Batang yang dikonsumsi bila masih merokok','Withdrawal effect','Kendala berhenti','Kendala lain','Kebiasaan yang menjadi kendala']; return uraiBerlabel(fu||'',labels); }
-function uraiFU4Tindak(fu){ var labels=['Waktu follow up','Langkah yang diambil','Rencana/saran yang diberikan','Kesimpulan follow up','Jadwal follow up selanjutnya','Akan berhenti pada tanggal','Tidak yakin, alasan']; return uraiBerlabel(fu||'',labels); }
+function uraiFU4Tindak(fu){ var labels=['Waktu follow up','Langkah yang diambil','Rencana/saran yang diberikan','Rencana / Tindak lanjut','Kesimpulan follow up','Jadwal follow up selanjutnya','Akan berhenti pada tanggal','Tidak yakin, alasan']; return uraiBerlabel(fu||'',labels); }
 function resetFormAwal(){ document.querySelectorAll('#modal-konseling input, #modal-konseling textarea, #modal-konseling select').forEach(function(el){ if(el.type==='checkbox'||el.type==='radio') el.checked=false; else el.value=''; }); document.querySelectorAll('#modal-konseling select').forEach(function(s){ s.selectedIndex=0; }); document.getElementById('a-terapi-konseling').checked=true; document.getElementById('a-tgl').value=todayStr(); ['a-fag-box','a-vape','a-mot-box','a-ps4-box','a-konselor-baru-box'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hidden'); }); ['a-fag-btn','a-mot-btn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.textContent=id==='a-fag-btn'?'Tampilkan Form Fagerstrom':'Tampilkan Form Skala Motivasi'; }); hitungFag(); hitungPS(); document.getElementById('a-mot-val').textContent='-'; document.getElementById('a-co-interp').textContent=''; document.getElementById('a-imt').textContent='-'; isiKonselor(); aturLabelBerikutnya(); }
 function resetFormFU(){ document.querySelectorAll('#modal-fu input, #modal-fu textarea, #modal-fu select').forEach(function(el){ if(el.type==='checkbox'||el.type==='radio') el.checked=false; else el.value=''; }); document.querySelectorAll('#modal-fu select').forEach(function(s){ s.selectedIndex=0; }); document.getElementById('m-tgl').value=todayStr(); ['m-fag-box','m-mot-box','m-konselor-baru-box'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hidden'); }); ['m-fag-btn','m-mot-btn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.textContent=id==='m-fag-btn'?'Tampilkan Form Fagerstrom':'Tampilkan Form Skala Motivasi'; }); hitungMFag(); document.getElementById('m-mot-val').textContent='-'; document.getElementById('m-co-interp').textContent=''; isiKonselor(); aturModeFU(); }
 function batalEditForm(){ editRow=null; editLama=null; document.getElementById('mode-edit-a').classList.add('hidden'); document.getElementById('mode-edit-m').classList.add('hidden'); tutupModal('modal-konseling'); tutupModal('modal-fu'); }
@@ -895,12 +896,12 @@ function isiFormFUDariRiwayat(r){
   var pen=uraiPenilaian(tindak);
   editLama={kendala:kendala,tindak:tindak,fagScore:pen.fag,motivasi:pen.motivasi,motAlasan:pen.motAlasan,konselor:pen.konselor};
   setNilai('m-tgl',r.values[2]); setPilih('m-jenis',r.values[3]); setPilih('m-status',r.values[4]); setNilai('m-co',r.values[5]); if(r.values[5]!==''&&r.values[5]!==null) document.getElementById('m-co-interp').textContent=coInterpretasi(Number(r.values[5])); setNilai('m-bb',r.values[6]); setNilai('m-td',r.values[7]);
-  var pk=pisahLampiran4(kendala); var dasarBersih=pk.dasar.replace(/\s*\|\s*\[5R\].*$/, '').trim(); setNilai('m-kendala',dasarBersih); pk.fu=pk.fu.replace(/\s*\|\s*\[5R\].*$/, '');
+  var pk=pisahLampiran4(kendala); var dasarBersih=pk.dasar.replace(/\s*\|\s*\[5R\].*$/, '').trim(); var hlM=dasarBersih.match(/(?:^|\s*\|\s*)Hasil pemeriksaan lainnya: (.*)$/); if(hlM){ setNilai('m-hasil-lain',hlM[1]); dasarBersih=dasarBersih.slice(0,hlM.index).replace(/\s*\|\s*$/,''); } setNilai('m-kendala',dasarBersih); pk.fu=pk.fu.replace(/\s*\|\s*\[5R\].*$/, '');
   var pt=tindak; var idxPen=pt.lastIndexOf(' | Penilaian: '); if(idxPen>=0) pt=pt.slice(0,idxPen); var pt2=pisahLampiran4(pt); setNilai('m-tindak',pt2.dasar);
   var fk=uraiFU4Kendala(pk.fu); (function(){ var hl=fk['Hasil follow up']||''; setPilih('f-hasil', hl==='Berhasil Berhenti' ? 'Berhasil berhenti' : (hl ? 'Tidak berhasil berhenti' : '')); })(); setNilai('f-kendala-terberat',fk['Kendala terberat']); var relVal=fk['Gejala Putus Nikotin/Withdrawal']||fk['Relaps']||''; setPilih('f-relaps',relVal ? (relVal.indexOf('Ya')===0?'Ya':'Tidak') : '');
   (function(){ var rel=fk['Gejala Putus Nikotin/Withdrawal']||fk['Relaps']||''; var pm=rel.match(/\(penyebab: (.+)\)/); if(!pm) return; var daftar=pm[1].split(', '); var lain=[]; daftar.forEach(function(v){ var vv=v.trim(); var c=document.querySelector('input[name="f-relaps-sebab"][value="'+vv+'"]'); if(c) c.checked=true; else lain.push(vv); }); if(lain.length) setNilai('f-relaps-lain',lain.join(', ')); })();
   centangKotak('f-wd',(fk['Withdrawal effect']||'').split(', ').filter(function(x){return x})); centangKotak('f-kendala',(fk['Kendala berhenti']||'').split(', ').filter(function(x){return x})); setNilai('f-kebiasaan',fk['Kebiasaan yang menjadi kendala']); setPilih('f-metode',fk['Metode yang digunakan']); var btM=(fk['Batang yang dikonsumsi bila masih merokok']||'').match(/(\d+)/); if(btM) setNilai('f-batang',btM[1]); setPilih('f-masih',fk['Masih merokok setelah tanggal berhenti']); setNilai('f-kendala-cerita',fk['Cerita kendala tidak bisa berhenti']); setNilai('f-kendala-lain',fk['Kendala lain']);
-  var ft=uraiFU4Tindak(pt2.fu); centangKotak('f-langkah',(ft['Langkah yang diambil']||'').split('; ').filter(function(x){return x})); setNilai('f-rencana',ft['Rencana/saran yang diberikan']); setPilih('f-simpulan',ft['Kesimpulan follow up']); setNilai('f-berikutnya',ft['Jadwal follow up selanjutnya']); setNilai('f-akan',ft['Akan berhenti pada tanggal']); setNilai('f-tidak-yakin',ft['Tidak yakin, alasan']); var p5=pisah5R(kendala); var r5=urai5R(p5.fu); setNilai('r-relevansi',r5['Relevansi']); setNilai('r-risiko',r5['Risiko']); setNilai('r-keuntungan',r5['Keuntungan']); setNilai('r-hambatan',r5['Hambatan']); setNilai('r-pengulangan',r5['Pengulangan']);
+  var ft=uraiFU4Tindak(pt2.fu); centangKotak('f-langkah',(ft['Langkah yang diambil']||'').split('; ').filter(function(x){return x})); setNilai('f-rencana',ft['Rencana / Tindak lanjut']||ft['Rencana/saran yang diberikan']); setPilih('f-simpulan',ft['Kesimpulan follow up']); setNilai('f-berikutnya',ft['Jadwal follow up selanjutnya']); setNilai('f-akan',ft['Akan berhenti pada tanggal']); setNilai('f-tidak-yakin',ft['Tidak yakin, alasan']); var p5=pisah5R(kendala); var r5=urai5R(p5.fu); setNilai('r-relevansi',r5['Relevansi']); setNilai('r-risiko',r5['Risiko']); setNilai('r-keuntungan',r5['Keuntungan']); setNilai('r-hambatan',r5['Hambatan']); setNilai('r-pengulangan',r5['Pengulangan']);
   if(pen.konselor) setPilih('m-konselor',pen.konselor);
   if(pen.motivasi){ centangRadio('m-mot-pilih',pen.motivasi); document.getElementById('m-mot-val').textContent=pen.motivasi; var catM=(pen.motAlasan||'').match(/\. Catatan: (.+)$/); if(catM) setNilai('m-mot-alasan',catM[1]); document.getElementById('m-mot-box').classList.remove('hidden'); document.getElementById('m-mot-btn').textContent='Sembunyikan Form Skala Motivasi'; }
   document.getElementById('modal-fu-judul').textContent='Edit Konseling / Follow Up: '+k.values[3];
@@ -936,7 +937,7 @@ function tampilDetail(teks){
   if(!s) return '-';
   s=s.replace(/(\d{4})-(\d{2})-(\d{2})/g,'$3/$2/$1');
   s=s.split(' | ').join('<br>');
-  var labels4=['Hasil follow up','Kendala terberat','Relaps','Gejala Putus Nikotin/Withdrawal','Masih merokok setelah tanggal berhenti','Metode yang digunakan','Cerita kendala tidak bisa berhenti','Batang yang dikonsumsi bila masih merokok','Withdrawal effect','Kendala berhenti','Kendala lain','Kebiasaan yang menjadi kendala','Langkah yang diambil','Rencana/saran yang diberikan','Kesimpulan follow up','Jadwal follow up selanjutnya','Akan berhenti pada tanggal','Tidak yakin, alasan','Waktu follow up','Relevansi','Risiko','Keuntungan','Hambatan','Pengulangan','Alasan motivasi','Jenis rokok','Rokok elektronik','Konselor'];
+  var labels4=['Hasil follow up','Kendala terberat','Relaps','Gejala Putus Nikotin/Withdrawal','Masih merokok setelah tanggal berhenti','Metode yang digunakan','Cerita kendala tidak bisa berhenti','Batang yang dikonsumsi bila masih merokok','Withdrawal effect','Kendala berhenti','Kendala lain','Kebiasaan yang menjadi kendala','Langkah yang diambil','Rencana/saran yang diberikan','Rencana / Tindak lanjut','Kesimpulan follow up','Jadwal follow up selanjutnya','Akan berhenti pada tanggal','Tidak yakin, alasan','Waktu follow up','Relevansi','Risiko','Keuntungan','Hambatan','Pengulangan','Alasan motivasi','Jenis rokok','Rokok elektronik','Konselor'];
   labels4.forEach(function(L){ s=s.split('; '+L+': ').join('<br>'+L+': '); });
   s=s.split('. Status awal (Lampiran 1): ').join('.<br>Status awal (Lampiran 1):<br>');
   s=s.split('Status awal (Lampiran 1): ').join('Status awal (Lampiran 1):<br>');
@@ -1009,7 +1010,7 @@ function simpanFUModal(e){ e.preventDefault(); if(!klienTerpilih){showMsg('Buka 
   var motA=(document.getElementById('m-mot-box').classList.contains('hidden')||!motPilihM) ? '' : ('Motivasi '+motPilihM.value+'/10 \u2014 Pernyataan: '+motPernyataan(motPilihM.value)+(document.getElementById('m-mot-alasan').value?'. Catatan: '+document.getElementById('m-mot-alasan').value:''));
   if(motB==='' && editRow && editLama && editLama.motivasi){ motB=editLama.motivasi; motA=editLama.motAlasan||motA; }
   var fu4=fu4Text();
-  var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('m-tgl').value, jenis:document.getElementById('m-jenis').value, statusMerokok:document.getElementById('m-status').value, co:document.getElementById('m-co').value, bb:document.getElementById('m-bb').value, td:document.getElementById('m-td').value, kendala:document.getElementById('m-kendala').value+(fu4.kendala?' | '+fu4.kendala:'')+(limaRText()?' | '+limaRText():''), tindak:document.getElementById('m-tindak').value+(fu4.tindak?' | '+fu4.tindak:''), konselor:document.getElementById('m-konselor').value||'', skorFagerstrom:fagB, motivasi:motB, motAlasan:motA, jenisRokok:'', vapeInfo:''};
+  var o={nik:klienTerpilih.values[2], nama:klienTerpilih.values[3], tanggal:document.getElementById('m-tgl').value, jenis:document.getElementById('m-jenis').value, statusMerokok:document.getElementById('m-status').value, co:document.getElementById('m-co').value, bb:document.getElementById('m-bb').value, td:document.getElementById('m-td').value, kendala:document.getElementById('m-kendala').value+(document.getElementById('m-hasil-lain').value?' | Hasil pemeriksaan lainnya: '+document.getElementById('m-hasil-lain').value:'')+(fu4.kendala?' | '+fu4.kendala:'')+(limaRText()?' | '+limaRText():''), tindak:document.getElementById('m-tindak').value+(fu4.tindak?' | '+fu4.tindak:''), konselor:document.getElementById('m-konselor').value||'', skorFagerstrom:fagB, motivasi:motB, motAlasan:motA, jenisRokok:'', vapeInfo:''};
   if(editRow){ var pen=[]; if(o.skorFagerstrom!==''&&o.skorFagerstrom!==null&&o.skorFagerstrom!==undefined) pen.push('Fagerstrom '+o.skorFagerstrom+' ('+labelFagBackend(o.skorFagerstrom)+')'); if(o.motivasi!==''&&o.motivasi!==null&&o.motivasi!==undefined) pen.push('Motivasi '+o.motivasi+'/10'); if(o.motAlasan) pen.push('Alasan motivasi: '+o.motAlasan); if(o.konselor) pen.push('Konselor: '+o.konselor); var tindakFinal=o.tindak; if(pen.length) tindakFinal=(tindakFinal?tindakFinal+' | ':'')+'Penilaian: '+pen.join('; '); run('updateKonselingRow',{row:editRow,tanggal:o.tanggal,jenis:o.jenis,statusMerokok:o.statusMerokok,co:o.co,bb:o.bb,td:o.td,kendala:o.kendala,tindak:tindakFinal},function(){showMsg('Riwayat berhasil diubah.','ok'); document.getElementById('mode-edit-m').classList.add('hidden'); tutupModal('modal-fu'); editRow=null; editLama=null; muat()}); } else { run('saveKonseling',o,function(){showMsg('Catatan konseling/FU tersimpan.','ok'); tutupModal('modal-fu'); muat()}); } return false }
 var KONSELOR_DEFAULT=['dr. Abdi Azhim Zauli Azra','Hj. Nurainun, S.Kep, Ners','Imanda Lestari, SKM'];
 function daftarKonselor(){ var out=KONSELOR_DEFAULT.slice(); if(DATA&&DATA.konselor){ DATA.konselor.forEach(function(r){ var n=String(r.values[0]||'').trim(); if(n&&out.indexOf(n)<0) out.push(n); }); } return out; }
@@ -1072,7 +1073,7 @@ function aturJenisFU(){
   ['m-fag-btn','m-mot-btn'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.toggle('hidden', fu); });
   if(fu){ ['m-fag-box','m-mot-box'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hidden'); }); }
   var ar=document.getElementById('fu4-akan-row'); if(ar) ar.classList.toggle('hidden', fu);
-  ['m-kendala-wrap','m-tindak-wrap'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.toggle('hidden', fu); });
+  ['m-kendala-wrap'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.toggle('hidden', fu); });
   aturModeFU();
   aturRelaps();
 }
@@ -1098,7 +1099,7 @@ function fu4Text(){
   if(val('f-kebiasaan')) k.push('Kebiasaan yang menjadi kendala: '+val('f-kebiasaan'));
   var langkah=cekList('f-langkah'); if(langkah.length) t.push('Langkah yang diambil: '+langkah.join('; '));
   if(val('f-simpulan')) t.push('Kesimpulan follow up: '+val('f-simpulan'));
-  if(val('f-rencana')) t.push('Rencana/saran yang diberikan: '+val('f-rencana'));
+  if(val('f-rencana')) t.push('Rencana / Tindak lanjut: '+val('f-rencana'));
   if(val('f-berikutnya')) t.push('Jadwal follow up selanjutnya: '+val('f-berikutnya'));
   if(val('f-akan')) t.push('Akan berhenti pada tanggal: '+val('f-akan'));
   if(val('f-tidak-yakin')) t.push('Tidak yakin, alasan: '+val('f-tidak-yakin'));
