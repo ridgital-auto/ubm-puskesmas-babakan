@@ -921,6 +921,19 @@ function cariFU(nik, tanggal){
   var rows=DATA.jadwal.filter(function(r){return String(r.values[3])===String(nik) && String(r.values[0])>=String(tanggal)}).sort(function(a,b){return String(a.values[0])>String(b.values[0])?1:-1});
   return rows.length?rows[0]:null;
 }
+function tampilDetail(teks){
+  var s=esc(teks||'');
+  if(!s) return '-';
+  s=s.split(' | ').join('<br>');
+  var labels4=['Hasil follow up','Kendala terberat','Relaps','Masih merokok setelah tanggal berhenti','Metode yang digunakan','Cerita kendala tidak bisa berhenti','Batang yang dikonsumsi bila masih merokok','Withdrawal effect','Kendala berhenti','Kendala lain','Kebiasaan yang menjadi kendala','Langkah yang diambil','Rencana/saran yang diberikan','Kesimpulan follow up','Akan berhenti pada tanggal','Tidak yakin, alasan','Waktu follow up','Relevansi','Risiko','Keuntungan','Hambatan','Pengulangan','Alasan motivasi','Jenis rokok','Rokok elektronik','Konselor'];
+  labels4.forEach(function(L){ s=s.split('; '+L+': ').join('<br>'+L+': '); });
+  s=s.split('Status awal (Lampiran 1): ').join('Status awal (Lampiran 1):<br>');
+  var labelsAwal=['No. RM','Nama Sekolah','Kelas','Alasan mulai merokok','Lama merokok','Jumlah rokok','Anggota keluarga yang merokok','Pemeriksaan awal','Riwayat berhenti sebelumnya','Tingkat kesiapan','Alasan ingin berhenti','Disampaikan','Pilihan terapi','Pertemuan berikutnya'];
+  labelsAwal.forEach(function(L){ s=s.split(', '+L+': ').join('<br>'+L+': '); });
+  ['Metode','Dukungan keluarga','Konselor','Profil'].forEach(function(L){ s=s.split('. '+L+': ').join('<br>'+L+': '); });
+  s=s.split('. Antisipasi gejala').join('<br>Antisipasi gejala');
+  return s;
+}
 function detailRiwayat(row){
   var r=DATA.konseling.find(function(x){return x.row===row}); if(!r||!klienTerpilih) return;
   document.getElementById('modal-detail-isi').innerHTML=
@@ -928,8 +941,8 @@ function detailRiwayat(row){
     '<p>Tanggal: '+esc(formatTglID(r.values[2]))+' &middot; Jenis: '+esc(r.values[3])+' &middot; Status merokok: '+esc(r.values[4])+'</p>' +
     (function(){ var fi=infoFollowUp(klienTerpilih.values[2], r); return '<p><b>Status klien saat ini:</b> '+esc(klienTerpilih.values[16]||'Aktif')+' &middot; <b>'+esc(fi.jenis||'Follow up')+':</b> '+esc(fi.status)+' &middot; <b>Jadwal FU:</b> '+esc(fi.tgl)+'</p>'; })() +
     '<p>CO: '+esc(r.values[5])+' ppm'+(r.values[5]===''||r.values[5]===null?'':' ('+coInterpretasi(Number(r.values[5]))+')')+' &middot; BB: '+esc(r.values[6])+' kg &middot; TD: '+esc(r.values[7])+'</p>'+
-    '<p><b>Profil / kendala:</b><br>'+esc(r.values[8])+'</p>'+
-    '<p><b>Tindak lanjut:</b><br>'+esc(r.values[9])+'</p>';
+    '<p><b>Profil / kendala:</b><br>'+tampilDetail(r.values[8])+'</p>'+
+    '<p><b>Tindak lanjut:</b><br>'+tampilDetail(r.values[9])+'</p>';
   document.getElementById('modal-detail').classList.remove('hidden');
 }
 function bukaFU(row){
